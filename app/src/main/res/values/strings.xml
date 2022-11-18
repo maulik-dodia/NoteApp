@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">NoteApp</string>
+    <string name="home_first_name">First Name</string>
+    <string name="home_last_name">Last Name</string>
+    <string name="home_submit">Submit</string>
+</resources>
