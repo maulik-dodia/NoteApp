@@ -42,14 +42,14 @@ fun AddEditNoteScreen() {
                 }
             )
         }
-    ) {
+    ) { paddingValues ->
         var noteTitle by remember { mutableStateOf("") }
         var noteDesc by remember { mutableStateOf("") }
 
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
+                .padding(paddingValues),
             verticalArrangement = Arrangement.Center
         ) {
             TextField(
