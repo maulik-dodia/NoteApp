@@ -4,7 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import com.noteapp.presentation.ui.screen.NoteListScreen
+import com.noteapp.presentation.navigation.NoteNavigation
 import com.noteapp.ui.theme.NoteAppTheme
 
 class MainActivity : ComponentActivity() {
@@ -13,7 +13,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             NoteAppTheme {
-                NoteListScreen()
+                NoteNavigation()
             }
         }
     }
