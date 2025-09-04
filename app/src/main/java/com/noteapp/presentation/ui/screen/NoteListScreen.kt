@@ -19,7 +19,7 @@ import com.noteapp.presentation.ui.component.NoteItem
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NoteListScreen() {
+fun NoteListScreen(onAddEditNoteClick: () -> Unit) {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -36,7 +36,7 @@ fun NoteListScreen() {
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = {},
+                onClick = onAddEditNoteClick,
                 containerColor = MaterialTheme.colorScheme.primary
             ) {
                 Icon(
@@ -57,5 +57,7 @@ fun NoteListScreen() {
 @Preview(showBackground = true)
 @Composable
 fun PreviewNoteListScreen() {
-    NoteListScreen()
+    NoteListScreen(
+        onAddEditNoteClick = {}
+    )
 }
