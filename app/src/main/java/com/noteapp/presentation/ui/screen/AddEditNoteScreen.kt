@@ -49,7 +49,8 @@ fun AddEditNoteScreen() {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues),
+                .padding(paddingValues)
+                .padding(16.dp),
             verticalArrangement = Arrangement.Center
         ) {
             TextField(
