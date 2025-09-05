@@ -28,7 +28,7 @@ import com.noteapp.presentation.viewmodel.AddEditNoteViewModel
 @Composable
 fun AddEditNoteScreen(
     navController: NavController?,
-    viewModel: AddEditNoteViewModel?
+    viewModel: AddEditNoteViewModel
 ) {
     Scaffold(
         topBar = {
@@ -57,17 +57,17 @@ fun AddEditNoteScreen(
             TextField(
                 modifier = Modifier.fillMaxWidth(),
                 label = { Text(text = "Title") },
-                value = viewModel?.noteTitle.toString(),
+                value = viewModel.noteTitle,
                 onValueChange = { newTitle ->
-                    viewModel?.apply {
+                    viewModel.apply {
                         noteTitle = newTitle
                         noteTitleError = false
                         onTitleChange(newTitle)
                     }
                 },
-                isError = viewModel?.noteTitleError == true,
+                isError = viewModel.noteTitleError,
                 supportingText = {
-                    if (viewModel?.noteTitleError == true) {
+                    if (viewModel.noteTitleError) {
                         Text(text = "This field is required")
                     }
                 }
@@ -75,18 +75,18 @@ fun AddEditNoteScreen(
             Spacer(modifier = Modifier.height(8.dp))
             TextField(
                 modifier = Modifier.fillMaxWidth(),
-                value = viewModel?.noteDesc.toString(),
+                value = viewModel.noteDesc,
                 onValueChange = { newDesc ->
-                    viewModel?.apply {
+                    viewModel.apply {
                         noteDesc = newDesc
                         noteDescError = false
                         onDescChange(newDesc)
                     }
                 },
                 label = { Text(text = "Description") },
-                isError = viewModel?.noteDescError == true,
+                isError = viewModel.noteDescError,
                 supportingText = {
-                    if (viewModel?.noteDescError == true) {
+                    if (viewModel.noteDescError) {
                         Text(text = "This field is required")
                     }
                 }
@@ -95,7 +95,7 @@ fun AddEditNoteScreen(
             Button(
                 modifier = Modifier.fillMaxWidth(),
                 onClick = {},
-                enabled = viewModel?.isAnyError == true
+                enabled = viewModel.isAnyError
             ) {
                 Text(text = "Save Note")
             }
