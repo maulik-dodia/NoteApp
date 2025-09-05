@@ -18,18 +18,18 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.noteapp.presentation.viewmodel.AddEditNoteViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddEditNoteScreen(navController: NavController?) {
+fun AddEditNoteScreen(
+    navController: NavController?,
+    viewModel: AddEditNoteViewModel
+) {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -47,9 +47,6 @@ fun AddEditNoteScreen(navController: NavController?) {
             )
         }
     ) { paddingValues ->
-        var noteTitle by remember { mutableStateOf("") }
-        var noteDesc by remember { mutableStateOf("") }
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -60,20 +57,45 @@ fun AddEditNoteScreen(navController: NavController?) {
             TextField(
                 modifier = Modifier.fillMaxWidth(),
                 label = { Text(text = "Title") },
-                value = noteTitle,
-                onValueChange = { noteTitle = it }
+                value = viewModel.noteTitle,
+                onValueChange = { newTitle ->
+                    viewModel.apply {
+                        noteTitle = newTitle
+                        noteTitleError = false
+                        onTitleChange(newTitle)
+                    }
+                },
+                isError = viewModel.noteTitleError,
+                supportingText = {
+                    if (viewModel.noteTitleError) {
+                        Text(text = "This field is required")
+                    }
+                }
             )
             Spacer(modifier = Modifier.height(8.dp))
             TextField(
                 modifier = Modifier.fillMaxWidth(),
-                value = noteDesc,
-                onValueChange = { noteDesc = it },
-                label = { Text(text = "Description") }
+                value = viewModel.noteDesc,
+                onValueChange = { newDesc ->
+                    viewModel.apply {
+                        noteDesc = newDesc
+                        noteDescError = false
+                        onDescChange(newDesc)
+                    }
+                },
+                label = { Text(text = "Description") },
+                isError = viewModel.noteDescError,
+                supportingText = {
+                    if (viewModel.noteDescError) {
+                        Text(text = "This field is required")
+                    }
+                }
             )
             Spacer(modifier = Modifier.height(8.dp))
             Button(
                 modifier = Modifier.fillMaxWidth(),
-                onClick = {}
+                onClick = {},
+                enabled = viewModel.isAnyError
             ) {
                 Text(text = "Save Note")
             }
@@ -84,5 +106,11 @@ fun AddEditNoteScreen(navController: NavController?) {
 @Preview(showBackground = true)
 @Composable
 fun PreviewAddEditNoteScreen() {
-    AddEditNoteScreen(navController = null)
+    val dummyViewModel = AddEditNoteViewModel().apply {
+        noteTitle = "Sample Title"
+        noteDesc = "Sample Description"
+        noteTitleError = true
+        noteDescError = true
+    }
+    AddEditNoteScreen(navController = null, viewModel = dummyViewModel)
 }
