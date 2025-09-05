@@ -14,7 +14,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import com.noteapp.R
 import com.noteapp.presentation.ui.component.NoteItem
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -24,12 +26,12 @@ fun NoteListScreen(onAddEditNoteClick: () -> Unit) {
         topBar = {
             TopAppBar(
                 title = {
-                    Text(text = "Notes")
+                    Text(text = stringResource(id = R.string.note_list_title))
                 },
                 navigationIcon = {
                     Icon(
                         imageVector = Icons.Default.Home,
-                        contentDescription = "Home"
+                        contentDescription = stringResource(id = R.string.home)
                     )
                 }
             )
@@ -41,7 +43,7 @@ fun NoteListScreen(onAddEditNoteClick: () -> Unit) {
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
-                    contentDescription = "Add Note"
+                    contentDescription = stringResource(id = R.string.add_note)
                 )
             }
         }

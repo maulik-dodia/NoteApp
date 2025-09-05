@@ -19,9 +19,11 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.noteapp.R
 import com.noteapp.presentation.viewmodel.AddEditNoteViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -34,13 +36,13 @@ fun AddEditNoteScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(text = "Add Note")
+                    Text(text = stringResource(id = R.string.add_note))
                 },
                 navigationIcon = {
                     IconButton(onClick = { navController?.popBackStack() }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = stringResource(id = R.string.back)
                         )
                     }
                 }
@@ -56,7 +58,7 @@ fun AddEditNoteScreen(
         ) {
             TextField(
                 modifier = Modifier.fillMaxWidth(),
-                label = { Text(text = "Title") },
+                label = { Text(text = stringResource(id = R.string.title_label)) },
                 value = viewModel.noteTitle,
                 onValueChange = { newTitle ->
                     viewModel.apply {
@@ -68,7 +70,7 @@ fun AddEditNoteScreen(
                 isError = viewModel.noteTitleError,
                 supportingText = {
                     if (viewModel.noteTitleError) {
-                        Text(text = "This field is required")
+                        Text(text = stringResource(id = R.string.field_required))
                     }
                 }
             )
@@ -83,11 +85,11 @@ fun AddEditNoteScreen(
                         onDescChange(newDesc)
                     }
                 },
-                label = { Text(text = "Description") },
+                label = { Text(text = stringResource(id = R.string.description_label)) },
                 isError = viewModel.noteDescError,
                 supportingText = {
                     if (viewModel.noteDescError) {
-                        Text(text = "This field is required")
+                        Text(text = stringResource(id = R.string.field_required))
                     }
                 }
             )
@@ -97,7 +99,7 @@ fun AddEditNoteScreen(
                 onClick = {},
                 enabled = viewModel.isAnyError
             ) {
-                Text(text = "Save Note")
+                Text(text = stringResource(id = R.string.save_note))
             }
         }
     }
