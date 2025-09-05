@@ -1,11 +1,13 @@
 package com.noteapp.presentation.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.noteapp.presentation.ui.screen.AddEditNoteScreen
 import com.noteapp.presentation.ui.screen.NoteListScreen
+import com.noteapp.presentation.viewmodel.AddEditNoteViewModel
 
 @Composable
 fun NoteNavigation() {
@@ -19,7 +21,11 @@ fun NoteNavigation() {
             )
         }
         composable("add_edit_note") {
-            AddEditNoteScreen(navController = navController)
+            val addEditNoteViewModel: AddEditNoteViewModel = viewModel()
+            AddEditNoteScreen(
+                navController = navController,
+                viewModel = addEditNoteViewModel
+            )
         }
     }
 }
