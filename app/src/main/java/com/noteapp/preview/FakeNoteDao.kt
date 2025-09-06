@@ -15,4 +15,10 @@ class FakeNoteDao : NoteDao {
     }
 
     override suspend fun insertNote(note: NoteEntity) {}
+
+    override fun getNoteById(id: Int): Flow<NoteEntity?> = flow {
+        NoteEntity(id = id, title = "Sample Note", description = "This is a sample note.")
+    }
+
+    override suspend fun updateNote(note: NoteEntity) {}
 }

@@ -4,11 +4,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.noteapp.data.repository.NoteRepository
 
-class AddEditNoteViewModelFactory(private val repository: NoteRepository) : ViewModelProvider.Factory {
+class AddEditNoteViewModelFactory(
+    private val repository: NoteRepository,
+    private val noteId: Int?
+) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(AddEditNoteViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return AddEditNoteViewModel(repository) as T
+            return AddEditNoteViewModel(noteRepository = repository, noteId = noteId) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

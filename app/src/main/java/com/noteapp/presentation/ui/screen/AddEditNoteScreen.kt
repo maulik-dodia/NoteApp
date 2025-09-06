@@ -57,7 +57,7 @@ fun AddEditNoteScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(16.dp),
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.Top
         ) {
             TextField(
                 modifier = Modifier.fillMaxWidth(),
