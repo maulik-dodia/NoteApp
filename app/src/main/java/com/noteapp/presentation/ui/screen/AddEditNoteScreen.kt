@@ -57,7 +57,7 @@ fun AddEditNoteScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(16.dp),
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.Top
         ) {
             TextField(
                 modifier = Modifier.fillMaxWidth(),
@@ -99,7 +99,11 @@ fun AddEditNoteScreen(
             Spacer(modifier = Modifier.height(8.dp))
             Button(
                 modifier = Modifier.fillMaxWidth(),
-                onClick = { viewModel.onSaveNote() },
+                onClick = {
+                    viewModel.saveNote {
+                        navController.popBackStack()
+                    }
+                },
                 enabled = viewModel.isAnyError
             ) {
                 Text(text = stringResource(id = R.string.save_note))

@@ -2,9 +2,11 @@ package com.noteapp.presentation.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.noteapp.data.repository.NoteRepository
 import com.noteapp.presentation.ui.screen.AddEditNoteScreen
 import com.noteapp.presentation.ui.screen.NoteListScreen
@@ -25,15 +27,27 @@ fun NoteNavigation(noteRepository: NoteRepository) {
                 factory = factory
             )
             NoteListScreen(
-                onAddEditNoteClick = {
-                    navController.navigate("add_edit_note")
+                viewModel = noteListViewModel,
+                onNoteClick = { noteId ->
+                    navController.navigate("add_edit_note/$noteId")
                 },
-                viewModel = noteListViewModel
+                onAddEditNoteClick = {
+                    navController.navigate("add_edit_note/-1")
+                }
             )
         }
         // Add Edit Note Screen
-        composable("add_edit_note") { navBackStackEntry ->
-            val factory = AddEditNoteViewModelFactory(noteRepository)
+        composable(
+            route = "add_edit_note/{noteId}",
+            arguments = listOf(
+                navArgument("noteId") {
+                    type = NavType.IntType
+                    defaultValue = -1
+                }
+            )
+        ) { navBackStackEntry ->
+            val noteId = navBackStackEntry.arguments?.getInt("noteId")
+            val factory = AddEditNoteViewModelFactory(noteRepository, noteId)
             val addEditNoteViewModel: AddEditNoteViewModel = viewModel(
                 viewModelStoreOwner = navBackStackEntry,
                 factory = factory

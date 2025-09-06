@@ -35,7 +35,7 @@ import com.noteapp.preview.FakeNoteDao
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NoteListScreen(viewModel: NoteListViewModel, onAddEditNoteClick: () -> Unit) {
+fun NoteListScreen(viewModel: NoteListViewModel, onNoteClick: (Int) -> Unit, onAddEditNoteClick: () -> Unit) {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -77,7 +77,9 @@ fun NoteListScreen(viewModel: NoteListViewModel, onAddEditNoteClick: () -> Unit)
                 val noteList = (uiState as NoteListUiState.Success).noteList
                 LazyColumn(modifier = Modifier.padding(paddingValues)) {
                     items(noteList) { note ->
-                        NoteItem(note = note)
+                        NoteItem(note = note) { noteId ->
+                            onNoteClick(noteId)
+                        }
                     }
                 }
             }
@@ -97,6 +99,8 @@ fun PreviewNoteListScreen() {
     val dummyRepository = NoteRepositoryImpl(noteDao)
     val dummyViewModel = NoteListViewModel(dummyRepository)
     NoteListScreen(
-        onAddEditNoteClick = {}, viewModel = dummyViewModel
+        onNoteClick = { },
+        onAddEditNoteClick = { },
+        viewModel = dummyViewModel
     )
 }
