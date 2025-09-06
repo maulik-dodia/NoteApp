@@ -4,8 +4,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.noteapp.data.local.NoteEntity
+import com.noteapp.data.repository.NoteRepository
+import kotlinx.coroutines.launch
 
-class AddEditNoteViewModel : ViewModel() {
+class AddEditNoteViewModel(private val noteRepository: NoteRepository) : ViewModel() {
 
     var noteTitle by mutableStateOf("")
     var noteDesc by mutableStateOf("")
@@ -23,5 +27,12 @@ class AddEditNoteViewModel : ViewModel() {
     fun onDescChange(newDesc: String) {
         noteDesc = newDesc
         noteDescError = newDesc.isBlank()
+    }
+
+    fun onSaveNote() {
+        viewModelScope.launch {
+            val note = NoteEntity(title = noteTitle, description = noteDesc)
+            noteRepository.insertNote(note)
+        }
     }
 }
