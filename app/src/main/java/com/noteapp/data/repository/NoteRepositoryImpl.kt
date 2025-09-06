@@ -2,10 +2,11 @@ package com.noteapp.data.repository
 
 import com.noteapp.data.local.NoteDao
 import com.noteapp.data.local.NoteEntity
+import kotlinx.coroutines.flow.Flow
 
 class NoteRepositoryImpl(private val noteDao: NoteDao): NoteRepository {
 
-    override suspend fun getAllNotes(): List<NoteEntity> {
+    override suspend fun getAllNotes(): Flow<List<NoteEntity>> {
         return noteDao.getAllNotes()
     }
 

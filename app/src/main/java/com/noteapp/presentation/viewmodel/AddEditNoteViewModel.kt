@@ -29,10 +29,11 @@ class AddEditNoteViewModel(private val noteRepository: NoteRepository) : ViewMod
         noteDescError = newDesc.isBlank()
     }
 
-    fun onSaveNote() {
+    fun saveNote(onNoteSaved:() -> Unit) {
         viewModelScope.launch {
             val note = NoteEntity(title = noteTitle, description = noteDesc)
             noteRepository.insertNote(note)
+            onNoteSaved()
         }
     }
 }
