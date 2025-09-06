@@ -19,10 +19,13 @@ import com.noteapp.data.local.NoteEntity
 import com.noteapp.data.local.formattedTimestamp
 
 @Composable
-fun NoteItem(note: NoteEntity) {
+fun NoteItem(note: NoteEntity, onNoteClick: (Int) -> Unit) {
     Card(modifier = Modifier
         .fillMaxWidth()
-        .padding(8.dp)
+        .padding(8.dp),
+        onClick = {
+            onNoteClick(note.id)
+        }
     ) {
         Column(modifier = Modifier.padding(8.dp)) {
             Text(
@@ -55,6 +58,7 @@ fun PreviewNoteItem() {
         note = NoteEntity(
             title = "Sample Note",
             description = "This is a sample note description."
-        )
+        ),
+        onNoteClick = { }
     )
 }
