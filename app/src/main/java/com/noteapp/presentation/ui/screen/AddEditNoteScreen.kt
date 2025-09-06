@@ -19,28 +19,33 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import com.noteapp.R
+import com.noteapp.data.repository.NoteRepositoryImpl
 import com.noteapp.presentation.viewmodel.AddEditNoteViewModel
+import com.noteapp.preview.FakeNoteDao
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddEditNoteScreen(
-    navController: NavController?,
+    navController: NavController,
     viewModel: AddEditNoteViewModel
 ) {
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(text = "Add Note")
+                    Text(text = stringResource(id = R.string.add_note))
                 },
                 navigationIcon = {
-                    IconButton(onClick = { navController?.popBackStack() }) {
+                    IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = stringResource(id = R.string.back)
                         )
                     }
                 }
@@ -56,7 +61,7 @@ fun AddEditNoteScreen(
         ) {
             TextField(
                 modifier = Modifier.fillMaxWidth(),
-                label = { Text(text = "Title") },
+                label = { Text(text = stringResource(id = R.string.title_label)) },
                 value = viewModel.noteTitle,
                 onValueChange = { newTitle ->
                     viewModel.apply {
@@ -68,7 +73,7 @@ fun AddEditNoteScreen(
                 isError = viewModel.noteTitleError,
                 supportingText = {
                     if (viewModel.noteTitleError) {
-                        Text(text = "This field is required")
+                        Text(text = stringResource(id = R.string.field_required))
                     }
                 }
             )
@@ -83,21 +88,21 @@ fun AddEditNoteScreen(
                         onDescChange(newDesc)
                     }
                 },
-                label = { Text(text = "Description") },
+                label = { Text(text = stringResource(id = R.string.description_label)) },
                 isError = viewModel.noteDescError,
                 supportingText = {
                     if (viewModel.noteDescError) {
-                        Text(text = "This field is required")
+                        Text(text = stringResource(id = R.string.field_required))
                     }
                 }
             )
             Spacer(modifier = Modifier.height(8.dp))
             Button(
                 modifier = Modifier.fillMaxWidth(),
-                onClick = {},
+                onClick = { viewModel.onSaveNote() },
                 enabled = viewModel.isAnyError
             ) {
-                Text(text = "Save Note")
+                Text(text = stringResource(id = R.string.save_note))
             }
         }
     }
@@ -106,11 +111,14 @@ fun AddEditNoteScreen(
 @Preview(showBackground = true)
 @Composable
 fun PreviewAddEditNoteScreen() {
-    val dummyViewModel = AddEditNoteViewModel().apply {
+    val noteDao = FakeNoteDao() // Replace with a mock or fake NoteDao if available
+    val dummyRepository = NoteRepositoryImpl(noteDao)
+    val dummyViewModel = AddEditNoteViewModel(dummyRepository).apply {
         noteTitle = "Sample Title"
         noteDesc = "Sample Description"
         noteTitleError = true
         noteDescError = true
     }
-    AddEditNoteScreen(navController = null, viewModel = dummyViewModel)
+    val navController = rememberNavController()
+    AddEditNoteScreen(navController = navController, viewModel = dummyViewModel)
 }
