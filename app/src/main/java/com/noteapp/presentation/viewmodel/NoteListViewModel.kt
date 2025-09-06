@@ -18,8 +18,9 @@ class NoteListViewModel(private val noteRepository: NoteRepository) : ViewModel(
         viewModelScope.launch {
             delay(2000)
             try {
-                val noteList = noteRepository.getAllNotes()
-                _uiState.value = NoteListUiState.Success(noteList)
+                noteRepository.getAllNotes().collect { noteList ->
+                    _uiState.value = NoteListUiState.Success(noteList)
+                }
             } catch (e: Exception) {
                 _uiState.value = NoteListUiState.Error("Failed to load notes: ${e.message}")
             }
