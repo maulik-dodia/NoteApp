@@ -111,7 +111,7 @@ fun AddEditNoteScreen(
 @Preview(showBackground = true)
 @Composable
 fun PreviewAddEditNoteScreen() {
-    val noteDao = FakeNoteDao() // Replace with a mock or fake NoteDao if available
+    val noteDao = FakeNoteDao()
     val dummyRepository = NoteRepositoryImpl(noteDao)
     val dummyViewModel = AddEditNoteViewModel(dummyRepository).apply {
         noteTitle = "Sample Title"
