@@ -106,7 +106,7 @@ fun AddEditNoteScreen(
                 },
                 enabled = viewModel.isAnyError
             ) {
-                Text(text = stringResource(id = R.string.save_note))
+                Text(text = stringResource(id = R.string.save))
             }
         }
     }
