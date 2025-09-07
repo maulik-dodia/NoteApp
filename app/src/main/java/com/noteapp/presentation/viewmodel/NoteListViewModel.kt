@@ -33,6 +33,12 @@ class NoteListViewModel(private val noteRepository: NoteRepository) : ViewModel(
             _uiState.value = NoteListUiState.Success(emptyList())
         }
     }
+
+    fun deleteNote(note: NoteEntity) {
+        viewModelScope.launch {
+            noteRepository.deleteNote(note)
+        }
+    }
 }
 
 sealed class NoteListUiState {

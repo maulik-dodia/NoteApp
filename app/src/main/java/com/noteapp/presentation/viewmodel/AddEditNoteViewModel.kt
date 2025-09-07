@@ -14,6 +14,9 @@ class AddEditNoteViewModel(
     val noteId: Int? = null
 ) : ViewModel() {
 
+    private var noteToBeEdited: NoteEntity? = null
+
+    var isEdit by mutableStateOf(false)
     var noteTitle by mutableStateOf("")
     var noteDesc by mutableStateOf("")
     var noteTitleError by mutableStateOf(false)
@@ -22,9 +25,11 @@ class AddEditNoteViewModel(
     init {
         noteId?.let { selectedNoteId ->
             if(selectedNoteId != -1) {
+                isEdit = true
                 viewModelScope.launch {
                     noteRepository.getNoteById(id = selectedNoteId).collect { note ->
-                        note?.let {
+                        noteToBeEdited = note
+                        noteToBeEdited?.let {
                             noteTitle = it.title
                             noteDesc = it.description
                         }
@@ -47,19 +52,28 @@ class AddEditNoteViewModel(
         noteDescError = newDesc.isBlank()
     }
 
-    fun saveNote(onNoteSaved:() -> Unit) {
+    fun saveNote(goBack:() -> Unit) {
         viewModelScope.launch {
             noteId?.let { selectedNoteId ->
                 if(selectedNoteId != -1) {
                     val note = NoteEntity(id = selectedNoteId, title = noteTitle, description = noteDesc)
                     noteRepository.updateNote(note)
-                    onNoteSaved()
+                    goBack()
                     return@launch
                 }
             }
             val note = NoteEntity(title = noteTitle, description = noteDesc)
             noteRepository.insertNote(note)
-            onNoteSaved()
+            goBack()
+        }
+    }
+
+    fun deleteNote(goBack:() -> Unit) {
+        viewModelScope.launch {
+            noteToBeEdited?.let {
+                noteRepository.deleteNote(it)
+                goBack()
+            }
         }
     }
 }
