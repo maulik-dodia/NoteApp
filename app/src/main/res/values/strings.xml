@@ -7,6 +7,7 @@
     <string name="delete">Delete</string>
     <string name="delete_all">Delete All</string>
     <string name="add_note">Add Note</string>
+    <string name="no_notes_available">No Notes Available</string>
 
     <!--Add Edit Note Screen-->
     <string name="title_label">Title</string>

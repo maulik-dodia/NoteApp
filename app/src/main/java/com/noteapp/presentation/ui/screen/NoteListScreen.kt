@@ -109,16 +109,30 @@ fun NoteListScreen(viewModel: NoteListViewModel,
 
             is NoteListUiState.Success -> {
                 val noteList = (uiState as NoteListUiState.Success).noteList
-                LazyColumn(modifier = Modifier.padding(paddingValues)) {
-                    items(noteList) { note ->
-                        NoteItem(
-                            note = note,
-                            onDeleteNoteClick = {
-                                onDeleteNoteClick(note)
-                            },
-                            onNoteClick = { noteId ->
-                                onNoteClick(noteId)
-                            }
+                if(noteList.isNotEmpty()) {
+                    LazyColumn(modifier = Modifier.padding(paddingValues)) {
+                        items(noteList) { note ->
+                            NoteItem(
+                                note = note,
+                                onDeleteNoteClick = {
+                                    onDeleteNoteClick(note)
+                                },
+                                onNoteClick = { noteId ->
+                                    onNoteClick(noteId)
+                                }
+                            )
+                        }
+                    }
+                } else {
+                    Column(modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            style = MaterialTheme.typography.displaySmall,
+                            text = stringResource(id = R.string.no_notes_available)
                         )
                     }
                 }
