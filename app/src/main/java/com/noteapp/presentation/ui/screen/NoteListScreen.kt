@@ -9,11 +9,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -21,6 +23,9 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -28,6 +33,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.noteapp.R
 import com.noteapp.data.repository.NoteRepositoryImpl
+import com.noteapp.presentation.ui.component.ConfirmationDialog
 import com.noteapp.presentation.ui.component.NoteItem
 import com.noteapp.presentation.viewmodel.NoteListUiState
 import com.noteapp.presentation.viewmodel.NoteListViewModel
@@ -35,7 +41,25 @@ import com.noteapp.preview.FakeNoteDao
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NoteListScreen(viewModel: NoteListViewModel, onNoteClick: (Int) -> Unit, onAddEditNoteClick: () -> Unit) {
+fun NoteListScreen(viewModel: NoteListViewModel, onDeleteAllNotesClick: () -> Unit, onNoteClick: (Int) -> Unit, onAddNoteClick: () -> Unit) {
+
+    val uiState by viewModel.uiState.collectAsState()
+    val hasNotes = (uiState as? NoteListUiState.Success)?.noteList?.isNotEmpty() == true
+
+    var showDeleteAllNotesDialog by remember { mutableStateOf(false) }
+
+    if(showDeleteAllNotesDialog) {
+        ConfirmationDialog(
+            title = "Delete All Notes",
+            message = "Are you sure you want to delete all notes?",
+            onConfirm = {
+                onDeleteAllNotesClick()
+                showDeleteAllNotesDialog = false
+            },
+            onDismiss = { showDeleteAllNotesDialog = false }
+        )
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -47,12 +71,24 @@ fun NoteListScreen(viewModel: NoteListViewModel, onNoteClick: (Int) -> Unit, onA
                         imageVector = Icons.Default.Home,
                         contentDescription = stringResource(id = R.string.home)
                     )
+                },
+                actions = {
+                    if (hasNotes) {
+                        IconButton(onClick = {
+                            showDeleteAllNotesDialog = true
+                        }) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = stringResource(id = R.string.delete)
+                            )
+                        }
+                    }
                 }
             )
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = onAddEditNoteClick,
+                onClick = onAddNoteClick,
                 containerColor = MaterialTheme.colorScheme.primary
             ) {
                 Icon(
@@ -62,7 +98,6 @@ fun NoteListScreen(viewModel: NoteListViewModel, onNoteClick: (Int) -> Unit, onA
             }
         }
     ) { paddingValues ->
-        val uiState by viewModel.uiState.collectAsState()
         when (uiState) {
             NoteListUiState.Loading -> {
                 Column(modifier = Modifier.fillMaxSize(),
@@ -99,8 +134,9 @@ fun PreviewNoteListScreen() {
     val dummyRepository = NoteRepositoryImpl(noteDao)
     val dummyViewModel = NoteListViewModel(dummyRepository)
     NoteListScreen(
+        onDeleteAllNotesClick = {},
         onNoteClick = { },
-        onAddEditNoteClick = { },
+        onAddNoteClick = { },
         viewModel = dummyViewModel
     )
 }

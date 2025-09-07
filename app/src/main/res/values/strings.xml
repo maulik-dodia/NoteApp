@@ -4,6 +4,7 @@
     <!--Note List Screen-->
     <string name="note_list_title">Notes</string>
     <string name="home">Home</string>
+    <string name="delete">Delete</string>
 
     <!--Add Edit Note Screen-->
     <string name="add_note">Add Note</string>

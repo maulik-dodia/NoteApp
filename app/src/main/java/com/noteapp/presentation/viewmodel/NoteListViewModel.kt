@@ -26,6 +26,13 @@ class NoteListViewModel(private val noteRepository: NoteRepository) : ViewModel(
             }
         }
     }
+
+    fun deleteAllNotes() {
+        viewModelScope.launch {
+            noteRepository.deleteAllNotes()
+            _uiState.value = NoteListUiState.Success(emptyList())
+        }
+    }
 }
 
 sealed class NoteListUiState {
