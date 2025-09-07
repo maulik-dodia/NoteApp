@@ -40,16 +40,17 @@ fun AddEditNoteScreen(
     navController: NavController,
     viewModel: AddEditNoteViewModel
 ) {
-
     var showDeleteNoteDialog by remember { mutableStateOf(false) }
-
     if(showDeleteNoteDialog) {
         ConfirmationDialog(
             title = "Delete Note",
             message = "Are you sure you want to delete this note?",
             onConfirm = {
                 viewModel.deleteNote {
-                    navController.popBackStack()
+                    navController.apply {
+                        previousBackStackEntry?.savedStateHandle?.set("note_state", "deleted")
+                        popBackStack()
+                    }
                 }
                 showDeleteNoteDialog = false
             },
@@ -123,7 +124,10 @@ fun AddEditNoteScreen(
                 modifier = Modifier.fillMaxWidth(),
                 onClick = {
                     viewModel.saveNote {
-                        navController.popBackStack()
+                        navController.apply {
+                            previousBackStackEntry?.savedStateHandle?.set("note_state", if(viewModel.isEdit) "updated" else "added")
+                            popBackStack()
+                        }
                     }
                 },
                 enabled = viewModel.isAnyError
@@ -154,5 +158,8 @@ fun PreviewAddEditNoteScreen() {
         noteDescError = true
     }
     val navController = rememberNavController()
-    AddEditNoteScreen(navController = navController, viewModel = dummyViewModel)
+    AddEditNoteScreen(
+        navController = navController,
+        viewModel = dummyViewModel
+    )
 }
