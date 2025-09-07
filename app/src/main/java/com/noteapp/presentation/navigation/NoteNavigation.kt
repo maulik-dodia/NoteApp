@@ -28,10 +28,13 @@ fun NoteNavigation(noteRepository: NoteRepository) {
             )
             NoteListScreen(
                 viewModel = noteListViewModel,
+                onDeleteAllNotesClick = {
+                    noteListViewModel.deleteAllNotes()
+                },
                 onNoteClick = { noteId ->
                     navController.navigate("add_edit_note/$noteId")
                 },
-                onAddEditNoteClick = {
+                onAddNoteClick = {
                     navController.navigate("add_edit_note/-1")
                 }
             )
