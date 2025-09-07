@@ -1,6 +1,7 @@
 package com.noteapp.data.local
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
@@ -23,4 +24,7 @@ interface NoteDao {
 
     @Query("DELETE FROM notes")
     suspend fun deleteAllNotes()
+
+    @Delete
+    suspend fun deleteNote(note: NoteEntity)
 }

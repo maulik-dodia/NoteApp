@@ -23,4 +23,6 @@ class FakeNoteDao : NoteDao {
     override suspend fun updateNote(note: NoteEntity) {}
 
     override suspend fun deleteAllNotes() {}
+
+    override suspend fun deleteNote(note: NoteEntity) {}
 }
