@@ -16,10 +16,13 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -30,8 +33,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.noteapp.R
-import com.noteapp.data.local.NoteEntity
 import com.noteapp.data.repository.NoteRepositoryImpl
 import com.noteapp.presentation.ui.component.ConfirmationDialog
 import com.noteapp.presentation.ui.component.NoteItem
@@ -41,28 +45,46 @@ import com.noteapp.preview.FakeNoteDao
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NoteListScreen(viewModel: NoteListViewModel,
-                   onDeleteNoteClick:(note: NoteEntity) -> Unit,
-                   onDeleteAllClick:() -> Unit,
+fun NoteListScreen(navController: NavController,
+                   viewModel: NoteListViewModel,
                    onNoteClick:(Int) -> Unit,
                    onAddNoteClick:() -> Unit) {
 
-    val uiState by viewModel.uiState.collectAsState()
-    val hasNotes = (uiState as? NoteListUiState.Success)?.noteList?.isNotEmpty() == true
+    // SnackBar for showing messages
+    val snackBarHostState = remember { SnackbarHostState() }
+    LaunchedEffect(key1 = Unit) {
+        val savedStateHandle = navController.currentBackStackEntry?.savedStateHandle
+        savedStateHandle?.get<String>("note_state")?.let { noteState ->
+            noteState.let {
+                snackBarHostState.showSnackbar("Note $noteState successfully!")
+                savedStateHandle.remove<Boolean>("note_state")
+            }
+        }
+    }
+    // As we are in same screen for SingleNoteDelete and AllNotesDelete functionalities, we can't use savedStateHandle approach to show snackBar
+    // So, using ViewModel's SharedFlow to show snackBar for these events
+    LaunchedEffect(key1 = viewModel.snackBarEvent) {
+        viewModel.snackBarEvent.collect { message ->
+            snackBarHostState.showSnackbar(message)
+        }
+    }
 
+    // Confirmation dialog for deleting all notes
     var showDeleteAllNotesDialog by remember { mutableStateOf(false) }
-
     if(showDeleteAllNotesDialog) {
         ConfirmationDialog(
             title = "Delete All Notes",
             message = "Are you sure you want to delete all notes?",
             onConfirm = {
-                onDeleteAllClick()
+                viewModel.deleteAllNotes()
                 showDeleteAllNotesDialog = false
             },
             onDismiss = { showDeleteAllNotesDialog = false }
         )
     }
+
+    val uiState by viewModel.uiState.collectAsState()
+    val hasNotes = (uiState as? NoteListUiState.Success)?.noteList?.isNotEmpty() == true
 
     Scaffold(
         topBar = {
@@ -95,7 +117,8 @@ fun NoteListScreen(viewModel: NoteListViewModel,
                     contentDescription = stringResource(id = R.string.add_note)
                 )
             }
-        }
+        },
+        snackbarHost = { SnackbarHost(hostState = snackBarHostState) }
     ) { paddingValues ->
         when (uiState) {
             NoteListUiState.Loading -> {
@@ -115,7 +138,7 @@ fun NoteListScreen(viewModel: NoteListViewModel,
                             NoteItem(
                                 note = note,
                                 onDeleteNoteClick = {
-                                    onDeleteNoteClick(note)
+                                    viewModel.deleteNote(note)
                                 },
                                 onNoteClick = { noteId ->
                                     onNoteClick(noteId)
@@ -152,11 +175,11 @@ fun PreviewNoteListScreen() {
     val noteDao = FakeNoteDao()
     val dummyRepository = NoteRepositoryImpl(noteDao)
     val dummyViewModel = NoteListViewModel(dummyRepository)
+    val navController = rememberNavController()
     NoteListScreen(
-        onDeleteNoteClick = { },
-        onDeleteAllClick = { },
         onNoteClick = { },
         onAddNoteClick = { },
-        viewModel = dummyViewModel
+        viewModel = dummyViewModel,
+        navController = navController
     )
 }

@@ -27,13 +27,8 @@ fun NoteNavigation(noteRepository: NoteRepository) {
                 factory = factory
             )
             NoteListScreen(
+                navController = navController,
                 viewModel = noteListViewModel,
-                onDeleteNoteClick = { note ->
-                    noteListViewModel.deleteNote(note)
-                },
-                onDeleteAllClick = {
-                    noteListViewModel.deleteAllNotes()
-                },
                 onNoteClick = { noteId ->
                     navController.navigate("add_edit_note/$noteId")
                 },

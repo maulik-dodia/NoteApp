@@ -5,8 +5,10 @@ import androidx.lifecycle.viewModelScope
 import com.noteapp.data.local.NoteEntity
 import com.noteapp.data.repository.NoteRepository
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 
 class NoteListViewModel(private val noteRepository: NoteRepository) : ViewModel() {
@@ -14,9 +16,12 @@ class NoteListViewModel(private val noteRepository: NoteRepository) : ViewModel(
     private var _uiState = MutableStateFlow<NoteListUiState>(NoteListUiState.Loading)
     val uiState: StateFlow<NoteListUiState> = _uiState
 
+    private val _snackBarEvent = MutableSharedFlow<String>()
+    val snackBarEvent = _snackBarEvent.asSharedFlow()
+
     init {
         viewModelScope.launch {
-            delay(2000)
+            delay(1000)
             try {
                 noteRepository.getAllNotes().collect { noteList ->
                     _uiState.value = NoteListUiState.Success(noteList)
@@ -30,13 +35,14 @@ class NoteListViewModel(private val noteRepository: NoteRepository) : ViewModel(
     fun deleteAllNotes() {
         viewModelScope.launch {
             noteRepository.deleteAllNotes()
-            _uiState.value = NoteListUiState.Success(emptyList())
+            _snackBarEvent.emit("All notes deleted successfully!")
         }
     }
 
     fun deleteNote(note: NoteEntity) {
         viewModelScope.launch {
             noteRepository.deleteNote(note)
+            _snackBarEvent.emit("Note deleted successfully!")
         }
     }
 }
