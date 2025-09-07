@@ -5,12 +5,13 @@
     <string name="note_list_title">Notes</string>
     <string name="home">Home</string>
     <string name="delete">Delete</string>
+    <string name="delete_all">Delete All</string>
+    <string name="add_note">Add Note</string>
 
     <!--Add Edit Note Screen-->
-    <string name="add_note">Add Note</string>
     <string name="title_label">Title</string>
     <string name="description_label">Description</string>
     <string name="back">Back</string>
-    <string name="save_note">Save Note</string>
+    <string name="save">Save</string>
     <string name="field_required">This field is required</string>
 </resources>

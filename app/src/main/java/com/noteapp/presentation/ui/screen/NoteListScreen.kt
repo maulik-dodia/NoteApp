@@ -19,6 +19,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -74,13 +75,8 @@ fun NoteListScreen(viewModel: NoteListViewModel, onDeleteAllNotesClick: () -> Un
                 },
                 actions = {
                     if (hasNotes) {
-                        IconButton(onClick = {
-                            showDeleteAllNotesDialog = true
-                        }) {
-                            Icon(
-                                imageVector = Icons.Default.Delete,
-                                contentDescription = stringResource(id = R.string.delete)
-                            )
+                        TextButton(onClick = { showDeleteAllNotesDialog = true }) {
+                            Text(text = stringResource(id = R.string.delete_all))
                         }
                     }
                 }
