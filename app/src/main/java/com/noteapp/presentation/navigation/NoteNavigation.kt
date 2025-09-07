@@ -28,7 +28,10 @@ fun NoteNavigation(noteRepository: NoteRepository) {
             )
             NoteListScreen(
                 viewModel = noteListViewModel,
-                onDeleteAllNotesClick = {
+                onDeleteNoteClick = { note ->
+                    noteListViewModel.deleteNote(note)
+                },
+                onDeleteAllClick = {
                     noteListViewModel.deleteAllNotes()
                 },
                 onNoteClick = { noteId ->

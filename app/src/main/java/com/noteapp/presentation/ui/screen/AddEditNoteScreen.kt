@@ -18,6 +18,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -26,6 +30,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.noteapp.R
 import com.noteapp.data.repository.NoteRepositoryImpl
+import com.noteapp.presentation.ui.component.ConfirmationDialog
 import com.noteapp.presentation.viewmodel.AddEditNoteViewModel
 import com.noteapp.preview.FakeNoteDao
 
@@ -35,6 +40,23 @@ fun AddEditNoteScreen(
     navController: NavController,
     viewModel: AddEditNoteViewModel
 ) {
+
+    var showDeleteNoteDialog by remember { mutableStateOf(false) }
+
+    if(showDeleteNoteDialog) {
+        ConfirmationDialog(
+            title = "Delete Note",
+            message = "Are you sure you want to delete this note?",
+            onConfirm = {
+                viewModel.deleteNote {
+                    navController.popBackStack()
+                }
+                showDeleteNoteDialog = false
+            },
+            onDismiss = { showDeleteNoteDialog = false }
+        )
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -106,7 +128,15 @@ fun AddEditNoteScreen(
                 },
                 enabled = viewModel.isAnyError
             ) {
-                Text(text = stringResource(id = R.string.save_note))
+                Text(text = stringResource(id = R.string.save))
+            }
+            if(viewModel.isEdit) {
+                Button(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = { showDeleteNoteDialog = true }
+                ) {
+                    Text(text = stringResource(id = R.string.delete))
+                }
             }
         }
     }
