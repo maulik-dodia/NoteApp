@@ -42,6 +42,7 @@ import com.noteapp.presentation.ui.component.NoteItem
 import com.noteapp.presentation.viewmodel.NoteListUiState
 import com.noteapp.presentation.viewmodel.NoteListViewModel
 import com.noteapp.preview.FakeNoteDao
+import com.noteapp.util.NoteConstant.NOTE_ACTION
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -54,18 +55,18 @@ fun NoteListScreen(navController: NavController,
     val snackBarHostState = remember { SnackbarHostState() }
     LaunchedEffect(key1 = Unit) {
         val savedStateHandle = navController.currentBackStackEntry?.savedStateHandle
-        savedStateHandle?.get<String>("note_state")?.let { noteState ->
+        savedStateHandle?.get<String>(NOTE_ACTION)?.let { noteState ->
             noteState.let {
-                snackBarHostState.showSnackbar("Note $noteState successfully!")
-                savedStateHandle.remove<Boolean>("note_state")
+                snackBarHostState.showSnackbar(message = noteState)
+                savedStateHandle.remove<Boolean>(key = NOTE_ACTION)
             }
         }
     }
     // As we are in same screen for SingleNoteDelete and AllNotesDelete functionalities, we can't use savedStateHandle approach to show snackBar
     // So, using ViewModel's SharedFlow to show snackBar for these events
     LaunchedEffect(key1 = viewModel.snackBarEvent) {
-        viewModel.snackBarEvent.collect { message ->
-            snackBarHostState.showSnackbar(message)
+        viewModel.snackBarEvent.collect { msg ->
+            snackBarHostState.showSnackbar(message = msg)
         }
     }
 
@@ -73,8 +74,8 @@ fun NoteListScreen(navController: NavController,
     var showDeleteAllNotesDialog by remember { mutableStateOf(false) }
     if(showDeleteAllNotesDialog) {
         ConfirmationDialog(
-            title = "Delete All Notes",
-            message = "Are you sure you want to delete all notes?",
+            title = stringResource(id = R.string.delete_all_notes),
+            message = stringResource(id = R.string.delete_all_notes_desc),
             onConfirm = {
                 viewModel.deleteAllNotes()
                 showDeleteAllNotesDialog = false
@@ -134,14 +135,14 @@ fun NoteListScreen(navController: NavController,
                 val noteList = (uiState as NoteListUiState.Success).noteList
                 if(noteList.isNotEmpty()) {
                     LazyColumn(modifier = Modifier.padding(paddingValues)) {
-                        items(noteList) { note ->
+                        items(items = noteList) { note ->
                             NoteItem(
                                 note = note,
-                                onDeleteNoteClick = {
-                                    viewModel.deleteNote(note)
-                                },
                                 onNoteClick = { noteId ->
                                     onNoteClick(noteId)
+                                },
+                                onDeleteNoteClick = {
+                                    viewModel.deleteNote(note)
                                 }
                             )
                         }

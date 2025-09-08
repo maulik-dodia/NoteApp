@@ -13,12 +13,12 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         val db = (application as NoteApp).database
-        val noteRepository = NoteRepositoryImpl(db.noteDao())
+        val noteRepository = NoteRepositoryImpl(noteDao = db.noteDao())
 
         enableEdgeToEdge()
         setContent {
             NoteAppTheme {
-                NoteNavigation(noteRepository)
+                NoteNavigation(noteRepository = noteRepository)
             }
         }
     }

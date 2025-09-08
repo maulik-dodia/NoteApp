@@ -33,6 +33,9 @@ import com.noteapp.data.repository.NoteRepositoryImpl
 import com.noteapp.presentation.ui.component.ConfirmationDialog
 import com.noteapp.presentation.viewmodel.AddEditNoteViewModel
 import com.noteapp.preview.FakeNoteDao
+import com.noteapp.util.NoteConstant.NOTE_ACTION
+import com.noteapp.util.NoteConstant.PREVIEW_NOTE_DESC
+import com.noteapp.util.NoteConstant.PREVIEW_NOTE_TITLE
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,15 +43,19 @@ fun AddEditNoteScreen(
     navController: NavController,
     viewModel: AddEditNoteViewModel
 ) {
-    var showDeleteNoteDialog by remember { mutableStateOf(false) }
+    val noteAddedMsg = stringResource(id = R.string.note_added)
+    val noteUpdatedMsg = stringResource(id = R.string.note_updated)
+    val noteDeletedMsg = stringResource(id = R.string.note_deleted)
+
+    var showDeleteNoteDialog by remember { mutableStateOf(value = false) }
     if(showDeleteNoteDialog) {
         ConfirmationDialog(
-            title = "Delete Note",
-            message = "Are you sure you want to delete this note?",
+            title = stringResource(id = R.string.delete_note),
+            message = stringResource(id = R.string.delete_note_desc),
             onConfirm = {
                 viewModel.deleteNote {
                     navController.apply {
-                        previousBackStackEntry?.savedStateHandle?.set("note_state", "deleted")
+                        previousBackStackEntry?.savedStateHandle?.set(NOTE_ACTION, noteDeletedMsg)
                         popBackStack()
                     }
                 }
@@ -79,7 +86,7 @@ fun AddEditNoteScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(16.dp),
+                .padding(all = 16.dp),
             verticalArrangement = Arrangement.Top
         ) {
             TextField(
@@ -100,7 +107,7 @@ fun AddEditNoteScreen(
                     }
                 }
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(height = 8.dp))
             TextField(
                 modifier = Modifier.fillMaxWidth(),
                 value = viewModel.noteDesc,
@@ -119,18 +126,20 @@ fun AddEditNoteScreen(
                     }
                 }
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(height = 8.dp))
             Button(
                 modifier = Modifier.fillMaxWidth(),
                 onClick = {
                     viewModel.saveNote {
                         navController.apply {
-                            previousBackStackEntry?.savedStateHandle?.set("note_state", if(viewModel.isEdit) "updated" else "added")
+                            previousBackStackEntry
+                                ?.savedStateHandle
+                                ?.set(NOTE_ACTION, if(viewModel.isEdit) noteUpdatedMsg else noteAddedMsg)
                             popBackStack()
                         }
                     }
                 },
-                enabled = viewModel.isAnyError
+                enabled = viewModel.isUserInputValid
             ) {
                 Text(text = stringResource(id = R.string.save))
             }
@@ -152,8 +161,8 @@ fun PreviewAddEditNoteScreen() {
     val noteDao = FakeNoteDao()
     val dummyRepository = NoteRepositoryImpl(noteDao)
     val dummyViewModel = AddEditNoteViewModel(dummyRepository).apply {
-        noteTitle = "Sample Title"
-        noteDesc = "Sample Description"
+        noteTitle = PREVIEW_NOTE_TITLE
+        noteDesc = PREVIEW_NOTE_DESC
         noteTitleError = true
         noteDescError = true
     }
