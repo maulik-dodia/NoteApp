@@ -7,6 +7,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.noteapp.data.local.NoteEntity
 import com.noteapp.data.repository.NoteRepository
+import com.noteapp.util.NoteConstant.EMPTY_STRING
+import com.noteapp.util.NoteConstant.MINUS_ONE
 import kotlinx.coroutines.launch
 
 class AddEditNoteViewModel(
@@ -17,14 +19,14 @@ class AddEditNoteViewModel(
     private var noteToBeEdited: NoteEntity? = null
 
     var isEdit by mutableStateOf(false)
-    var noteTitle by mutableStateOf("")
-    var noteDesc by mutableStateOf("")
+    var noteTitle by mutableStateOf(EMPTY_STRING)
+    var noteDesc by mutableStateOf(EMPTY_STRING)
     var noteTitleError by mutableStateOf(false)
     var noteDescError by mutableStateOf(false)
 
     init {
         noteId?.let { selectedNoteId ->
-            if(selectedNoteId != -1) {
+            if(selectedNoteId != MINUS_ONE) {
                 isEdit = true
                 viewModelScope.launch {
                     noteRepository.getNoteById(id = selectedNoteId).collect { note ->
@@ -39,7 +41,7 @@ class AddEditNoteViewModel(
         }
     }
 
-    val isAnyError
+    val isUserInputValid
         get() = noteTitle.isNotBlank() && noteDesc.isNotBlank() && !noteTitleError && !noteDescError
 
     fun onTitleChange(newTitle: String) {
@@ -55,14 +57,18 @@ class AddEditNoteViewModel(
     fun saveNote(goBack:() -> Unit) {
         viewModelScope.launch {
             noteId?.let { selectedNoteId ->
-                if(selectedNoteId != -1) {
-                    val note = NoteEntity(id = selectedNoteId, title = noteTitle, description = noteDesc)
+                if(selectedNoteId != MINUS_ONE) {
+                    val note = NoteEntity(
+                        id = selectedNoteId,
+                        title = noteTitle.trim(),
+                        description = noteDesc.trim()
+                    )
                     noteRepository.updateNote(note)
                     goBack()
                     return@launch
                 }
             }
-            val note = NoteEntity(title = noteTitle, description = noteDesc)
+            val note = NoteEntity(title = noteTitle.trim(), description = noteDesc.trim())
             noteRepository.insertNote(note)
             goBack()
         }
@@ -71,7 +77,7 @@ class AddEditNoteViewModel(
     fun deleteNote(goBack:() -> Unit) {
         viewModelScope.launch {
             noteToBeEdited?.let {
-                noteRepository.deleteNote(it)
+                noteRepository.deleteNote(note = it)
                 goBack()
             }
         }

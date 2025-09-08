@@ -14,14 +14,18 @@ import com.noteapp.presentation.viewmodel.AddEditNoteViewModel
 import com.noteapp.presentation.viewmodel.AddEditNoteViewModelFactory
 import com.noteapp.presentation.viewmodel.NoteListViewModel
 import com.noteapp.presentation.viewmodel.NoteListViewModelFactory
+import com.noteapp.util.NoteConstant.ADD_EDIT_NOTE
+import com.noteapp.util.NoteConstant.MINUS_ONE
+import com.noteapp.util.NoteConstant.NOTE_ID
+import com.noteapp.util.NoteConstant.NOTE_LIST
 
 @Composable
 fun NoteNavigation(noteRepository: NoteRepository) {
     val navController = rememberNavController()
-    NavHost(navController = navController, startDestination = "notes_list") {
+    NavHost(navController = navController, startDestination = NOTE_LIST) {
         // Note List Screen
-        composable("notes_list") { navBackStackEntry ->
-            val factory = NoteListViewModelFactory(noteRepository)
+        composable(route = NOTE_LIST) { navBackStackEntry ->
+            val factory = NoteListViewModelFactory(repository = noteRepository)
             val noteListViewModel: NoteListViewModel = viewModel(
                 viewModelStoreOwner = navBackStackEntry,
                 factory = factory
@@ -30,28 +34,28 @@ fun NoteNavigation(noteRepository: NoteRepository) {
                 navController = navController,
                 viewModel = noteListViewModel,
                 onNoteClick = { noteId ->
-                    navController.navigate("add_edit_note/$noteId")
+                    navController.navigate(route = "$ADD_EDIT_NOTE/$noteId")
                 },
                 onAddNoteClick = {
-                    navController.navigate("add_edit_note/-1")
+                    navController.navigate(route = "$ADD_EDIT_NOTE/$MINUS_ONE")
                 }
             )
         }
         // Add Edit Note Screen
         composable(
-            route = "add_edit_note/{noteId}",
+            route = "$ADD_EDIT_NOTE/{$NOTE_ID}",
             arguments = listOf(
-                navArgument("noteId") {
+                navArgument(name = NOTE_ID) {
                     type = NavType.IntType
-                    defaultValue = -1
+                    defaultValue = MINUS_ONE
                 }
             )
         ) { navBackStackEntry ->
-            val noteId = navBackStackEntry.arguments?.getInt("noteId")
-            val factory = AddEditNoteViewModelFactory(noteRepository, noteId)
+            val noteId = navBackStackEntry.arguments?.getInt(NOTE_ID) ?: MINUS_ONE
+            val factory = AddEditNoteViewModelFactory(noteId = noteId, repository = noteRepository)
             val addEditNoteViewModel: AddEditNoteViewModel = viewModel(
-                viewModelStoreOwner = navBackStackEntry,
-                factory = factory
+                factory = factory,
+                viewModelStoreOwner = navBackStackEntry
             )
             AddEditNoteScreen(
                 navController = navController,
