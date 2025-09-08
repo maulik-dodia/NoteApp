@@ -3,6 +3,7 @@ package com.noteapp
 import android.app.Application
 import androidx.room.Room
 import com.noteapp.data.local.NoteDatabase
+import com.noteapp.util.NoteConstant.NOTE_DB
 
 class NoteApp: Application() {
 
@@ -14,8 +15,8 @@ class NoteApp: Application() {
 
         database = Room.databaseBuilder(
             applicationContext,
-            NoteDatabase::class.java,
-            "notes_db"
+            klass = NoteDatabase::class.java,
+            name = NOTE_DB
         ).build()
     }
 }

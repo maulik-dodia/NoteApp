@@ -27,20 +27,22 @@ import androidx.compose.ui.unit.dp
 import com.noteapp.R
 import com.noteapp.data.local.NoteEntity
 import com.noteapp.data.local.formattedTimestamp
+import com.noteapp.util.NoteConstant.PREVIEW_NOTE_DESC
+import com.noteapp.util.NoteConstant.PREVIEW_NOTE_TITLE
 
 @Composable
 fun NoteItem(note: NoteEntity,
-             onDeleteNoteClick:(note: NoteEntity) -> Unit,
-             onNoteClick:(Int) -> Unit) {
+             onNoteClick:(Int) -> Unit,
+             onDeleteNoteClick:() -> Unit) {
 
-    var showDeleteNoteDialog by remember { mutableStateOf(false) }
+    var showDeleteNoteDialog by remember { mutableStateOf(value = false) }
 
     if(showDeleteNoteDialog) {
         ConfirmationDialog(
-            title = "Delete Note",
-            message = "Are you sure you want to delete this note?",
+            title = stringResource(id = R.string.delete_note),
+            message = stringResource(id = R.string.delete_note_desc),
             onConfirm = {
-                onDeleteNoteClick(note)
+                onDeleteNoteClick()
                 showDeleteNoteDialog = false
             },
             onDismiss = { showDeleteNoteDialog = false }
@@ -49,27 +51,27 @@ fun NoteItem(note: NoteEntity,
 
     Card(modifier = Modifier
         .fillMaxWidth()
-        .padding(8.dp),
+        .padding(all = 8.dp),
         onClick = {
             onNoteClick(note.id)
         }
     ) {
         Row(modifier = Modifier
                 .fillMaxWidth()
-                .padding(8.dp),
+                .padding(all = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column(modifier = Modifier.weight(1f)) {
+            Column(modifier = Modifier.weight(weight = 1f)) {
                 Text(
                     style = MaterialTheme.typography.titleMedium,
                     text = note.title
                 )
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(height = 4.dp))
                 Text(
                     style = MaterialTheme.typography.bodyMedium,
                     text = note.description
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(height = 8.dp))
                 Text(
                     style = MaterialTheme.typography.labelSmall,
                     text = note.formattedTimestamp
@@ -91,8 +93,8 @@ fun NoteItem(note: NoteEntity,
 fun PreviewNoteItem() {
     NoteItem(
         note = NoteEntity(
-            title = "Sample Note",
-            description = "This is a sample note description. This is a sample note description"
+            title = PREVIEW_NOTE_TITLE,
+            description = PREVIEW_NOTE_DESC
         ),
         onNoteClick = { },
         onDeleteNoteClick = { }

@@ -5,8 +5,8 @@ import androidx.lifecycle.ViewModelProvider
 import com.noteapp.data.repository.NoteRepository
 
 class AddEditNoteViewModelFactory(
-    private val repository: NoteRepository,
-    private val noteId: Int?
+    private val noteId: Int?,
+    private val repository: NoteRepository
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(AddEditNoteViewModel::class.java)) {

@@ -4,6 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.noteapp.data.local.NoteEntity
 import com.noteapp.data.repository.NoteRepository
+import com.noteapp.util.NoteConstant.ALL_NOTES_DELETED_DESC
+import com.noteapp.util.NoteConstant.FAILED_TO_LOAD_DESC
+import com.noteapp.util.NoteConstant.NOTE_DELETED_DESC
+import com.noteapp.util.NoteConstant.ONE_THOUSAND_LONG
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,7 +17,7 @@ import kotlinx.coroutines.launch
 
 class NoteListViewModel(private val noteRepository: NoteRepository) : ViewModel() {
 
-    private var _uiState = MutableStateFlow<NoteListUiState>(NoteListUiState.Loading)
+    private var _uiState = MutableStateFlow<NoteListUiState>(value = NoteListUiState.Loading)
     val uiState: StateFlow<NoteListUiState> = _uiState
 
     private val _snackBarEvent = MutableSharedFlow<String>()
@@ -21,13 +25,14 @@ class NoteListViewModel(private val noteRepository: NoteRepository) : ViewModel(
 
     init {
         viewModelScope.launch {
-            delay(1000)
+            delay(timeMillis = ONE_THOUSAND_LONG)
             try {
                 noteRepository.getAllNotes().collect { noteList ->
                     _uiState.value = NoteListUiState.Success(noteList)
                 }
             } catch (e: Exception) {
-                _uiState.value = NoteListUiState.Error("Failed to load notes: ${e.message}")
+                // TODO: Move FAILED_TO_LOAD_DESC to strings.xml later
+                _uiState.value = NoteListUiState.Error(message = "$FAILED_TO_LOAD_DESC ${e.message}")
             }
         }
     }
@@ -35,14 +40,16 @@ class NoteListViewModel(private val noteRepository: NoteRepository) : ViewModel(
     fun deleteAllNotes() {
         viewModelScope.launch {
             noteRepository.deleteAllNotes()
-            _snackBarEvent.emit("All notes deleted successfully!")
+            // TODO: Move ALL_NOTES_DELETED_DESC to strings.xml later
+            _snackBarEvent.emit(value = ALL_NOTES_DELETED_DESC)
         }
     }
 
     fun deleteNote(note: NoteEntity) {
         viewModelScope.launch {
             noteRepository.deleteNote(note)
-            _snackBarEvent.emit("Note deleted successfully!")
+            // TODO: Move NOTE_DELETED_DESC to strings.xml later
+            _snackBarEvent.emit(value = NOTE_DELETED_DESC)
         }
     }
 }
