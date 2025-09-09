@@ -66,4 +66,8 @@ dependencies {
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
+
+    // Dagger 2 dependencies
+    implementation(libs.dagger)
+    ksp(libs.dagger.compiler)
 }
