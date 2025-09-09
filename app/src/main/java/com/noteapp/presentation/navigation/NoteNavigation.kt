@@ -20,15 +20,14 @@ import com.noteapp.util.NoteConstant.NOTE_ID
 import com.noteapp.util.NoteConstant.NOTE_LIST
 
 @Composable
-fun NoteNavigation(noteRepository: NoteRepository) {
+fun NoteNavigation(noteRepository: NoteRepository, noteListViewModelFactory: NoteListViewModelFactory) {
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = NOTE_LIST) {
         // Note List Screen
         composable(route = NOTE_LIST) { navBackStackEntry ->
-            val factory = NoteListViewModelFactory(repository = noteRepository)
             val noteListViewModel: NoteListViewModel = viewModel(
                 viewModelStoreOwner = navBackStackEntry,
-                factory = factory
+                factory = noteListViewModelFactory
             )
             NoteListScreen(
                 navController = navController,

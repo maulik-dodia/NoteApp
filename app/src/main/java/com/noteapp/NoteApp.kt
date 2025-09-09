@@ -1,22 +1,19 @@
 package com.noteapp
 
 import android.app.Application
-import androidx.room.Room
-import com.noteapp.data.local.NoteDatabase
-import com.noteapp.util.NoteConstant.NOTE_DB
+import com.noteapp.di.AppComponent
+import com.noteapp.di.AppModule
+import com.noteapp.di.DaggerAppComponent
 
 class NoteApp: Application() {
 
-    lateinit var database: NoteDatabase
-        private set
+    lateinit var appComponent: AppComponent
 
     override fun onCreate() {
         super.onCreate()
 
-        database = Room.databaseBuilder(
-            applicationContext,
-            klass = NoteDatabase::class.java,
-            name = NOTE_DB
-        ).build()
+        appComponent = DaggerAppComponent.builder()
+            .appModule(AppModule(application = this))
+            .build()
     }
 }
