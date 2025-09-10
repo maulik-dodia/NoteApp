@@ -14,10 +14,13 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -28,8 +31,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.google.firebase.firestore.FirebaseFirestore
 import com.noteapp.R
-import com.noteapp.data.repository.NoteRepositoryImpl
+import com.noteapp.data.repository.FirestoreDBRepositoryImpl
+import com.noteapp.data.repository.RoomDBRepositoryImpl
 import com.noteapp.presentation.ui.component.ConfirmationDialog
 import com.noteapp.presentation.viewmodel.AddEditNoteViewModel
 import com.noteapp.preview.FakeNoteDao
@@ -46,6 +51,14 @@ fun AddEditNoteScreen(
     val noteAddedMsg = stringResource(id = R.string.note_added)
     val noteUpdatedMsg = stringResource(id = R.string.note_updated)
     val noteDeletedMsg = stringResource(id = R.string.note_deleted)
+
+    // SnackBar for showing messages
+    val snackBarHostState = remember { SnackbarHostState() }
+    LaunchedEffect(key1 = viewModel.snackBarEvent) {
+        viewModel.snackBarEvent.collect { msg ->
+            snackBarHostState.showSnackbar(message = msg)
+        }
+    }
 
     var showDeleteNoteDialog by remember { mutableStateOf(value = false) }
     if(showDeleteNoteDialog) {
@@ -80,7 +93,8 @@ fun AddEditNoteScreen(
                     }
                 }
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(hostState = snackBarHostState) }
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -130,7 +144,16 @@ fun AddEditNoteScreen(
             Button(
                 modifier = Modifier.fillMaxWidth(),
                 onClick = {
-                    viewModel.saveNote {
+                    // TODO Remove when implement single source of truth
+                    /*viewModel.saveNote {
+                        navController.apply {
+                            previousBackStackEntry
+                                ?.savedStateHandle
+                                ?.set(NOTE_ACTION, if(viewModel.isEdit) noteUpdatedMsg else noteAddedMsg)
+                            popBackStack()
+                        }
+                    }*/
+                    viewModel.saveNoteFirestore {
                         navController.apply {
                             previousBackStackEntry
                                 ?.savedStateHandle
@@ -159,8 +182,10 @@ fun AddEditNoteScreen(
 @Composable
 fun PreviewAddEditNoteScreen() {
     val noteDao = FakeNoteDao()
-    val dummyRepository = NoteRepositoryImpl(noteDao)
-    val dummyViewModel = AddEditNoteViewModel(dummyRepository).apply {
+    val firestore = FirebaseFirestore.getInstance()
+    val fakeRoomDBRepository = RoomDBRepositoryImpl(noteDao = noteDao)
+    val fakeFirestoreRepository = FirestoreDBRepositoryImpl(firestore = firestore)
+    val dummyViewModel = AddEditNoteViewModel(roomRepository = fakeRoomDBRepository, firestoreRepository = fakeFirestoreRepository).apply {
         noteTitle = PREVIEW_NOTE_TITLE
         noteDesc = PREVIEW_NOTE_DESC
         noteTitleError = true
