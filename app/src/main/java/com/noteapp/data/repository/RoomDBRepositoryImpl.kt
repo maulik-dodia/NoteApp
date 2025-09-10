@@ -5,9 +5,7 @@ import com.noteapp.data.local.NoteEntity
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
-class NoteRepositoryImpl @Inject constructor(
-    private val noteDao: NoteDao
-): NoteRepository {
+class RoomDBRepositoryImpl @Inject constructor(private val noteDao: NoteDao): RoomDBRepository {
 
     override suspend fun getAllNotes(): Flow<List<NoteEntity>> {
         return noteDao.getAllNotes()
