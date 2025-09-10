@@ -2,20 +2,23 @@ package com.noteapp.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.noteapp.data.local.NoteEntity
-import com.noteapp.data.repository.NoteRepository
+import com.noteapp.data.repository.FirestoreDBRepository
+import com.noteapp.data.repository.RoomDBRepository
+import com.noteapp.domain.model.Note
 import com.noteapp.util.NoteConstant.ALL_NOTES_DELETED_DESC
 import com.noteapp.util.NoteConstant.FAILED_TO_LOAD_DESC
+import com.noteapp.util.NoteConstant.GENERIC_ERROR
 import com.noteapp.util.NoteConstant.NOTE_DELETED_DESC
-import com.noteapp.util.NoteConstant.ONE_THOUSAND_LONG
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 
-class NoteListViewModel(private val noteRepository: NoteRepository) : ViewModel() {
+class NoteListViewModel(
+    private val roomRepository: RoomDBRepository,
+    private val firestoreRepository: FirestoreDBRepository
+) : ViewModel() {
 
     private var _uiState = MutableStateFlow<NoteListUiState>(value = NoteListUiState.Loading)
     val uiState: StateFlow<NoteListUiState> = _uiState
@@ -24,38 +27,70 @@ class NoteListViewModel(private val noteRepository: NoteRepository) : ViewModel(
     val snackBarEvent = _snackBarEvent.asSharedFlow()
 
     init {
-        viewModelScope.launch {
-            delay(timeMillis = ONE_THOUSAND_LONG)
+        observeAllNotesFirestore()
+        // TODO Remove when implement single source of truth
+        /*viewModelScope.launch {
             try {
                 noteRepository.getAllNotes().collect { noteList ->
                     _uiState.value = NoteListUiState.Success(noteList)
                 }
             } catch (e: Exception) {
-                // TODO: Move FAILED_TO_LOAD_DESC to strings.xml later
                 _uiState.value = NoteListUiState.Error(message = "$FAILED_TO_LOAD_DESC ${e.message}")
+            }
+        }*/
+    }
+
+    private fun observeAllNotesFirestore() {
+        viewModelScope.launch {
+            firestoreRepository.observeAllNotes().collect { notes ->
+                _uiState.value = NoteListUiState.Success(notes)
             }
         }
     }
 
-    fun deleteAllNotes() {
+    // TODO Remove when implement single source of truth
+    /*fun deleteNote(note: Note) {
         viewModelScope.launch {
-            noteRepository.deleteAllNotes()
-            // TODO: Move ALL_NOTES_DELETED_DESC to strings.xml later
-            _snackBarEvent.emit(value = ALL_NOTES_DELETED_DESC)
+            //noteRepository.deleteNote(note)
+            _snackBarEvent.emit(value = NOTE_DELETED_DESC)
+        }
+    }*/
+
+    fun deleteNoteFirestore(note: Note) {
+        viewModelScope.launch {
+            try {
+                _uiState.value = NoteListUiState.Loading
+                firestoreRepository.deleteNote(note)
+                _snackBarEvent.emit(value = NOTE_DELETED_DESC)
+            } catch (e: Exception) {
+                _uiState.value = NoteListUiState.Error(message = "$GENERIC_ERROR ${e.message}")
+            }
         }
     }
 
-    fun deleteNote(note: NoteEntity) {
+    // TODO Remove when implement single source of truth
+    /*fun deleteAllNotes() {
         viewModelScope.launch {
-            noteRepository.deleteNote(note)
-            // TODO: Move NOTE_DELETED_DESC to strings.xml later
-            _snackBarEvent.emit(value = NOTE_DELETED_DESC)
+            noteRepository.deleteAllNotes()
+            _snackBarEvent.emit(value = ALL_NOTES_DELETED_DESC)
+        }
+    }*/
+
+    fun deleteAllNotesFirestore() {
+        viewModelScope.launch {
+            try {
+                _uiState.value = NoteListUiState.Loading
+                firestoreRepository.deleteAllNotes()
+                _snackBarEvent.emit(value = ALL_NOTES_DELETED_DESC)
+            } catch (e: Exception) {
+                _uiState.value = NoteListUiState.Error(message = "$GENERIC_ERROR ${e.message}")
+            }
         }
     }
 }
 
 sealed class NoteListUiState {
     object Loading : NoteListUiState()
-    data class Success(val noteList: List<NoteEntity>) : NoteListUiState()
+    data class Success(val noteList: List<Note>) : NoteListUiState()
     data class Error(val message: String) : NoteListUiState()
 }

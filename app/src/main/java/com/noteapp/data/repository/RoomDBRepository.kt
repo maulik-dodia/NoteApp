@@ -3,7 +3,7 @@ package com.noteapp.data.repository
 import com.noteapp.data.local.NoteEntity
 import kotlinx.coroutines.flow.Flow
 
-interface NoteRepository {
+interface RoomDBRepository {
 
     suspend fun getAllNotes(): Flow<List<NoteEntity>>
 

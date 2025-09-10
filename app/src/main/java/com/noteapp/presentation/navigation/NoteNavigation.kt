@@ -7,7 +7,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.noteapp.data.repository.NoteRepository
+import com.noteapp.data.repository.FirestoreDBRepository
+import com.noteapp.data.repository.RoomDBRepository
 import com.noteapp.presentation.ui.screen.AddEditNoteScreen
 import com.noteapp.presentation.ui.screen.NoteListScreen
 import com.noteapp.presentation.viewmodel.AddEditNoteViewModel
@@ -20,7 +21,9 @@ import com.noteapp.util.NoteConstant.NOTE_ID
 import com.noteapp.util.NoteConstant.NOTE_LIST
 
 @Composable
-fun NoteNavigation(noteRepository: NoteRepository, noteListViewModelFactory: NoteListViewModelFactory) {
+fun NoteNavigation(roomRepository: RoomDBRepository,
+                   firestoreRepository: FirestoreDBRepository,
+                   noteListViewModelFactory: NoteListViewModelFactory) {
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = NOTE_LIST) {
         // Note List Screen
@@ -51,7 +54,11 @@ fun NoteNavigation(noteRepository: NoteRepository, noteListViewModelFactory: Not
             )
         ) { navBackStackEntry ->
             val noteId = navBackStackEntry.arguments?.getInt(NOTE_ID) ?: MINUS_ONE
-            val factory = AddEditNoteViewModelFactory(noteId = noteId, repository = noteRepository)
+            val factory = AddEditNoteViewModelFactory(
+                noteId = noteId,
+                roomRepository = roomRepository,
+                firestoreRepository = firestoreRepository
+            )
             val addEditNoteViewModel: AddEditNoteViewModel = viewModel(
                 factory = factory,
                 viewModelStoreOwner = navBackStackEntry

@@ -35,8 +35,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.google.firebase.firestore.FirebaseFirestore
 import com.noteapp.R
-import com.noteapp.data.repository.NoteRepositoryImpl
+import com.noteapp.data.repository.FirestoreDBRepositoryImpl
+import com.noteapp.data.repository.RoomDBRepositoryImpl
 import com.noteapp.presentation.ui.component.ConfirmationDialog
 import com.noteapp.presentation.ui.component.NoteItem
 import com.noteapp.presentation.viewmodel.NoteListUiState
@@ -77,7 +79,8 @@ fun NoteListScreen(navController: NavController,
             title = stringResource(id = R.string.delete_all_notes),
             message = stringResource(id = R.string.delete_all_notes_desc),
             onConfirm = {
-                viewModel.deleteAllNotes()
+                //viewModel.deleteAllNotes() // TODO Remove when implement single source of truth
+                viewModel.deleteAllNotesFirestore()
                 showDeleteAllNotesDialog = false
             },
             onDismiss = { showDeleteAllNotesDialog = false }
@@ -142,7 +145,8 @@ fun NoteListScreen(navController: NavController,
                                     onNoteClick(noteId)
                                 },
                                 onDeleteNoteClick = {
-                                    viewModel.deleteNote(note)
+                                    //viewModel.deleteNote(note) // TODO Remove when implement single source of truth
+                                    viewModel.deleteNoteFirestore(note)
                                 }
                             )
                         }
@@ -174,8 +178,10 @@ fun NoteListScreen(navController: NavController,
 @Composable
 fun PreviewNoteListScreen() {
     val noteDao = FakeNoteDao()
-    val dummyRepository = NoteRepositoryImpl(noteDao)
-    val dummyViewModel = NoteListViewModel(dummyRepository)
+    val firestore = FirebaseFirestore.getInstance()
+    val fakeRoomRepository = RoomDBRepositoryImpl(noteDao = noteDao)
+    val fakeFirestoreRepository = FirestoreDBRepositoryImpl(firestore = firestore)
+    val dummyViewModel = NoteListViewModel(roomRepository = fakeRoomRepository, firestoreRepository = fakeFirestoreRepository)
     val navController = rememberNavController()
     NoteListScreen(
         onNoteClick = { },

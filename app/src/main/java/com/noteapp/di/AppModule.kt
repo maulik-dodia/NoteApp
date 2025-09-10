@@ -3,10 +3,14 @@ package com.noteapp.di
 import android.app.Application
 import android.content.Context
 import androidx.room.Room
+import com.google.firebase.FirebaseApp
+import com.google.firebase.firestore.FirebaseFirestore
 import com.noteapp.data.local.NoteDao
 import com.noteapp.data.local.NoteDatabase
-import com.noteapp.data.repository.NoteRepository
-import com.noteapp.data.repository.NoteRepositoryImpl
+import com.noteapp.data.repository.FirestoreDBRepository
+import com.noteapp.data.repository.FirestoreDBRepositoryImpl
+import com.noteapp.data.repository.RoomDBRepository
+import com.noteapp.data.repository.RoomDBRepositoryImpl
 import com.noteapp.presentation.viewmodel.NoteListViewModelFactory
 import com.noteapp.util.NoteConstant.NOTE_DB
 import dagger.Module
@@ -22,7 +26,14 @@ class AppModule(private val application: Application) {
         return application
     }
 
-    // Database providers
+    // Firestore database providers
+    @Provides
+    fun provideFirestoreDatabase(context: Context): FirebaseFirestore {
+        FirebaseApp.initializeApp(context)
+        return FirebaseFirestore.getInstance()
+    }
+
+    // Room Database providers
     @Provides
     @Singleton
     fun provideNoteDatabase(context: Context): NoteDatabase {
@@ -40,13 +51,18 @@ class AppModule(private val application: Application) {
 
     // Repository providers
     @Provides
-    fun provideNoteRepository(noteDao: NoteDao): NoteRepository {
-        return NoteRepositoryImpl(noteDao)
+    fun provideFirestoreRepository(firestore: FirebaseFirestore): FirestoreDBRepository {
+        return FirestoreDBRepositoryImpl(firestore = firestore)
+    }
+
+    @Provides
+    fun provideNoteRepository(noteDao: NoteDao): RoomDBRepository {
+        return RoomDBRepositoryImpl(noteDao = noteDao)
     }
 
     // ViewModel providers
     @Provides
-    fun provideNoteListViewModelFactory(repository: NoteRepository): NoteListViewModelFactory {
-        return NoteListViewModelFactory(repository)
+    fun provideNoteListViewModelFactory(roomRepository: RoomDBRepository, firestoreRepository: FirestoreDBRepository): NoteListViewModelFactory {
+        return NoteListViewModelFactory(roomRepository = roomRepository, firestoreRepository = firestoreRepository)
     }
 }

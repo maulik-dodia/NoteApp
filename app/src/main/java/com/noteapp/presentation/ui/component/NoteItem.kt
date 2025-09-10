@@ -25,13 +25,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.noteapp.R
-import com.noteapp.data.local.NoteEntity
-import com.noteapp.data.local.formattedTimestamp
+import com.noteapp.domain.model.Note
+import com.noteapp.domain.model.formattedTimestamp
 import com.noteapp.util.NoteConstant.PREVIEW_NOTE_DESC
 import com.noteapp.util.NoteConstant.PREVIEW_NOTE_TITLE
 
 @Composable
-fun NoteItem(note: NoteEntity,
+fun NoteItem(note: Note,
              onNoteClick:(Int) -> Unit,
              onDeleteNoteClick:() -> Unit) {
 
@@ -53,7 +53,7 @@ fun NoteItem(note: NoteEntity,
         .fillMaxWidth()
         .padding(all = 8.dp),
         onClick = {
-            onNoteClick(note.id)
+            onNoteClick(note.id.toInt())
         }
     ) {
         Row(modifier = Modifier
@@ -92,7 +92,7 @@ fun NoteItem(note: NoteEntity,
 @Composable
 fun PreviewNoteItem() {
     NoteItem(
-        note = NoteEntity(
+        note = Note(
             title = PREVIEW_NOTE_TITLE,
             description = PREVIEW_NOTE_DESC
         ),
