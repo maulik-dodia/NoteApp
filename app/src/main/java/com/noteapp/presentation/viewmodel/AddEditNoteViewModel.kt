@@ -5,14 +5,19 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.firestore.FirebaseFirestoreException
 import com.noteapp.data.repository.FirestoreDBRepository
 import com.noteapp.data.repository.RoomDBRepository
 import com.noteapp.domain.model.Note
 import com.noteapp.util.NoteConstant.EMPTY_STRING
+import com.noteapp.util.NoteConstant.FAILED_TO_LOAD_NOTE
 import com.noteapp.util.NoteConstant.GENERIC_ERROR
+import com.noteapp.util.NoteConstant.NOTE_NOT_FOUND_ERROR
+import com.noteapp.util.getFirestoreError
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
+import kotlin.coroutines.cancellation.CancellationException
 
 class AddEditNoteViewModel(
     val noteId: String? = null,
@@ -23,33 +28,38 @@ class AddEditNoteViewModel(
     private val _snackBarEvent = MutableSharedFlow<String>()
     val snackBarEvent = _snackBarEvent.asSharedFlow()
 
-    private var noteToBeEdited: Note? = null
-
     var isEdit by mutableStateOf(false)
     var noteTitle by mutableStateOf(EMPTY_STRING)
     var noteDesc by mutableStateOf(EMPTY_STRING)
     var noteTitleError by mutableStateOf(false)
     var noteDescError by mutableStateOf(false)
 
+    private var noteToBeEdited: Note? = null
+
     init {
         noteId?.let { selectedNoteId ->
-            /*if(selectedNoteId != MINUS_ONE) {*/
-                isEdit = true
-                viewModelScope.launch {
-                    /*roomRepository.getNoteById(id = selectedNoteId).collect { note ->
-                        noteToBeEdited = note
-                        noteToBeEdited?.let {
-                            noteTitle = it.title
-                            noteDesc = it.description
-                        }
-                    }*/
-                    noteToBeEdited = firestoreRepository.getNoteById(selectedNoteId)
+            isEdit = true
+            viewModelScope.launch {
+                try {
+                    noteToBeEdited = firestoreRepository.getNoteById(selectedNoteId) // suspend
+                    if (noteToBeEdited == null) {
+                        _snackBarEvent.emit(value = NOTE_NOT_FOUND_ERROR)
+                        return@launch
+                    }
                     noteToBeEdited?.let {
                         noteTitle = it.title
                         noteDesc = it.description
                     }
+                } catch (ce: CancellationException) {
+                    throw ce
+                } catch (ex: FirebaseFirestoreException) {
+                    val errorMsg = getFirestoreError(firestoreException = ex)
+                    _snackBarEvent.emit(value = errorMsg)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    _snackBarEvent.emit(value = FAILED_TO_LOAD_NOTE)
                 }
-            /*}*/
+            }
         }
     }
 
@@ -66,57 +76,45 @@ class AddEditNoteViewModel(
         noteDescError = newDesc.isBlank()
     }
 
-    // TODO Remove when implement single source of truth
-    /*fun saveNote(goBack:() -> Unit) {
-        viewModelScope.launch {
-            noteId?.let { selectedNoteId ->
-                if(selectedNoteId != MINUS_ONE) {
-                    val note = NoteEntity(
-                        id = selectedNoteId,
-                        title = noteTitle.trim(),
-                        description = noteDesc.trim()
-                    )
-                    roomDBRepository.updateNote(note)
-                    goBack()
-                    return@launch
-                }
-            }
-            val note = NoteEntity(title = noteTitle.trim(), description = noteDesc.trim())
-            roomDBRepository.insertNote(note)
-            goBack()
-        }
-    }*/
-
-    fun saveNoteFirestore(goBack:() -> Unit) {
+    fun saveNote(goBack:() -> Unit) {
         viewModelScope.launch {
             try {
-                // Update operation
-                noteId?.let { selectedNoteId ->
-                    val note = Note(
-                        id = selectedNoteId,
-                        title = noteTitle.trim(),
-                        description = noteDesc.trim()
-                    )
+                val title = noteTitle.trim()
+                val desc = noteDesc.trim()
+                if (!noteId.isNullOrEmpty()) { // Update operation
+                    val note = Note(id = noteId, title = title, description = desc)
                     firestoreRepository.updateNote(note)
-                    goBack()
-                    return@launch
+                } else { // Insert operation
+                    val note = Note(title = title, description = desc)
+                    firestoreRepository.insertNote(note)
                 }
-                // Insert operation
-                val note = Note(title = noteTitle.trim(), description = noteDesc.trim())
-                firestoreRepository.insertNote(note = note)
                 goBack()
+            } catch (ce: CancellationException) {
+                throw ce
+            } catch (ex: FirebaseFirestoreException) {
+                val errorMsg = getFirestoreError(firestoreException = ex)
+                _snackBarEvent.emit(value = errorMsg)
             } catch (e: Exception) {
-               _snackBarEvent.emit(value = GENERIC_ERROR)
+                e.printStackTrace()
+                _snackBarEvent.emit(value = GENERIC_ERROR)
             }
         }
     }
 
     fun deleteNote(goBack:() -> Unit) {
         viewModelScope.launch {
-            noteToBeEdited?.let {
-                //roomRepository.deleteNote(note = it)
-                firestoreRepository.deleteNote(id = it.id)
+            try {
+                val note = noteToBeEdited ?: return@launch
+                firestoreRepository.deleteNoteById(id = note.id)
                 goBack()
+            } catch (ce: CancellationException) {
+                throw ce
+            } catch (ex: FirebaseFirestoreException) {
+                val errorMsg = getFirestoreError(firestoreException = ex)
+                _snackBarEvent.emit(value = errorMsg)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                _snackBarEvent.emit(value = GENERIC_ERROR)
             }
         }
     }

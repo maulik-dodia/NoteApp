@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface FirestoreDBRepository {
 
-    suspend fun observeAllNotes(): Flow<List<Note>>
+    suspend fun observeNoteList(): Flow<List<Note>>
 
     suspend fun insertNote(note: Note): String
 
@@ -13,7 +13,7 @@ interface FirestoreDBRepository {
 
     suspend fun updateNote(note: Note)
 
-    suspend fun deleteNote(id: String)
+    suspend fun deleteNoteById(id: String)
 
     suspend fun deleteAllNotes()
 }
