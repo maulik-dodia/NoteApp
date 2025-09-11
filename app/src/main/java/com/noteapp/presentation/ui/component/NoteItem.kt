@@ -32,7 +32,7 @@ import com.noteapp.util.NoteConstant.PREVIEW_NOTE_TITLE
 
 @Composable
 fun NoteItem(note: Note,
-             onNoteClick:(Int) -> Unit,
+             onNoteClick:(String) -> Unit,
              onDeleteNoteClick:() -> Unit) {
 
     var showDeleteNoteDialog by remember { mutableStateOf(value = false) }
@@ -53,7 +53,7 @@ fun NoteItem(note: Note,
         .fillMaxWidth()
         .padding(all = 8.dp),
         onClick = {
-            onNoteClick(note.id.toInt())
+            onNoteClick(note.id)
         }
     ) {
         Row(modifier = Modifier

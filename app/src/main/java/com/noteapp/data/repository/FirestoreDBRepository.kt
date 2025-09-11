@@ -9,11 +9,11 @@ interface FirestoreDBRepository {
 
     suspend fun insertNote(note: Note): String
 
-    suspend fun getNoteById(id: Int): Flow<Note?>
+    suspend fun getNoteById(id: String): Note?
 
     suspend fun updateNote(note: Note)
 
-    suspend fun deleteNote(note: Note)
+    suspend fun deleteNote(id: String)
 
     suspend fun deleteAllNotes()
 }
