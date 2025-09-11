@@ -18,7 +18,6 @@ object NoteConstant {
     const val ONE = 1
     const val TWO = 2
     const val THREE = 3
-    const val MINUS_ONE = -1
 
     // Rest
     const val NO = "No"
@@ -34,8 +33,17 @@ object NoteConstant {
     const val PREVIEW_NOTE_DESC = "This is a sample note description used for previewing"
 
     // TODO Need to move to strings.xml later
-    const val GENERIC_ERROR = "Something went wrong!"
-    const val FAILED_TO_LOAD_DESC = "Failed to load notes: "
-    const val NOTE_DELETED_DESC = "Note deleted successfully!"
-    const val ALL_NOTES_DELETED_DESC = "All notes deleted successfully!"
+    const val SAVE_NOTE_ERROR_2 = "Please try again."
+    const val NOTE_NOT_FOUND_ERROR = "Note not found."
+    const val GENERIC_ERROR = "Something went wrong."
+    const val SAVE_NOTE_ERROR_1 = "Failed to save note"
+    const val FAILED_TO_LOAD_NOTE = "Failed to load note."
+    const val ABORT_ERROR = "Write conflicted. Please retry."
+    const val NOTE_DELETED_MSG = "Note deleted successfully."
+    const val RESOURCE_NOT_FOUND_ERROR = "Resource not found."
+    const val ALL_NOTES_DELETED_MSG = "All notes deleted successfully."
+    const val REQUEST_TIMEOUT_ERROR = "Request timed out. Please retry."
+    const val NOTE_ALREADY_EXISTS_ERROR = "A note with this ID already exists."
+    const val NETWORK_ERROR = "Network unavailable. Check connection and try again."
+    const val PERMISSION_ERROR = "Permission denied. Please sign in or check Firestore rules."
 }

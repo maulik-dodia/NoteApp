@@ -15,7 +15,7 @@ class FirestoreDBRepositoryImpl @Inject constructor(private val firestore: Fireb
 
     private val noteCollection = firestore.collection(NOTES)
 
-    override suspend fun observeAllNotes(): Flow<List<Note>> {
+    override suspend fun observeNoteList(): Flow<List<Note>> {
         return noteCollection
             .orderBy(TIMESTAMP)
             .snapshots()
@@ -44,7 +44,7 @@ class FirestoreDBRepositoryImpl @Inject constructor(private val firestore: Fireb
         noteCollection.document(note.id).set(note).await()
     }
 
-    override suspend fun deleteNote(id: String) {
+    override suspend fun deleteNoteById(id: String) {
         noteCollection.document(id).delete().await()
     }
 
