@@ -35,16 +35,17 @@ class FirestoreDBRepositoryImpl @Inject constructor(private val firestore: Fireb
         }
     }
 
-    override suspend fun getNoteById(id: Int): Flow<Note?> {
-        TODO("Not yet implemented")
+    override suspend fun getNoteById(id: String): Note? {
+        return noteCollection.document(id).get().await().toObject<Note>()
     }
 
     override suspend fun updateNote(note: Note) {
-        TODO("Not yet implemented")
+        require(note.id.isNotEmpty())
+        noteCollection.document(note.id).set(note).await()
     }
 
-    override suspend fun deleteNote(note: Note) {
-        noteCollection.document(note.id).delete().await()
+    override suspend fun deleteNote(id: String) {
+        noteCollection.document(id).delete().await()
     }
 
     override suspend fun deleteAllNotes() {

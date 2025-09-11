@@ -6,7 +6,6 @@ import com.noteapp.data.repository.FirestoreDBRepository
 import com.noteapp.data.repository.RoomDBRepository
 import com.noteapp.domain.model.Note
 import com.noteapp.util.NoteConstant.ALL_NOTES_DELETED_DESC
-import com.noteapp.util.NoteConstant.FAILED_TO_LOAD_DESC
 import com.noteapp.util.NoteConstant.GENERIC_ERROR
 import com.noteapp.util.NoteConstant.NOTE_DELETED_DESC
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -56,11 +55,11 @@ class NoteListViewModel(
         }
     }*/
 
-    fun deleteNoteFirestore(note: Note) {
+    fun deleteNoteFirestore(noteId: String) {
         viewModelScope.launch {
             try {
                 _uiState.value = NoteListUiState.Loading
-                firestoreRepository.deleteNote(note)
+                firestoreRepository.deleteNote(id = noteId)
                 _snackBarEvent.emit(value = NOTE_DELETED_DESC)
             } catch (e: Exception) {
                 _uiState.value = NoteListUiState.Error(message = "$GENERIC_ERROR ${e.message}")

@@ -5,19 +5,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.noteapp.data.local.NoteEntity
 import com.noteapp.data.repository.FirestoreDBRepository
 import com.noteapp.data.repository.RoomDBRepository
 import com.noteapp.domain.model.Note
 import com.noteapp.util.NoteConstant.EMPTY_STRING
 import com.noteapp.util.NoteConstant.GENERIC_ERROR
-import com.noteapp.util.NoteConstant.MINUS_ONE
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 
 class AddEditNoteViewModel(
-    noteId: Int? = null,
+    val noteId: String? = null,
     private val roomRepository: RoomDBRepository,
     private val firestoreRepository: FirestoreDBRepository
 ) : ViewModel() {
@@ -25,7 +23,7 @@ class AddEditNoteViewModel(
     private val _snackBarEvent = MutableSharedFlow<String>()
     val snackBarEvent = _snackBarEvent.asSharedFlow()
 
-    private var noteToBeEdited: NoteEntity? = null
+    private var noteToBeEdited: Note? = null
 
     var isEdit by mutableStateOf(false)
     var noteTitle by mutableStateOf(EMPTY_STRING)
@@ -35,18 +33,23 @@ class AddEditNoteViewModel(
 
     init {
         noteId?.let { selectedNoteId ->
-            if(selectedNoteId != MINUS_ONE) {
+            /*if(selectedNoteId != MINUS_ONE) {*/
                 isEdit = true
                 viewModelScope.launch {
-                    roomRepository.getNoteById(id = selectedNoteId).collect { note ->
+                    /*roomRepository.getNoteById(id = selectedNoteId).collect { note ->
                         noteToBeEdited = note
                         noteToBeEdited?.let {
                             noteTitle = it.title
                             noteDesc = it.description
                         }
+                    }*/
+                    noteToBeEdited = firestoreRepository.getNoteById(selectedNoteId)
+                    noteToBeEdited?.let {
+                        noteTitle = it.title
+                        noteDesc = it.description
                     }
                 }
-            }
+            /*}*/
         }
     }
 
@@ -87,6 +90,18 @@ class AddEditNoteViewModel(
     fun saveNoteFirestore(goBack:() -> Unit) {
         viewModelScope.launch {
             try {
+                // Update operation
+                noteId?.let { selectedNoteId ->
+                    val note = Note(
+                        id = selectedNoteId,
+                        title = noteTitle.trim(),
+                        description = noteDesc.trim()
+                    )
+                    firestoreRepository.updateNote(note)
+                    goBack()
+                    return@launch
+                }
+                // Insert operation
                 val note = Note(title = noteTitle.trim(), description = noteDesc.trim())
                 firestoreRepository.insertNote(note = note)
                 goBack()
@@ -99,7 +114,8 @@ class AddEditNoteViewModel(
     fun deleteNote(goBack:() -> Unit) {
         viewModelScope.launch {
             noteToBeEdited?.let {
-                roomRepository.deleteNote(note = it)
+                //roomRepository.deleteNote(note = it)
+                firestoreRepository.deleteNote(id = it.id)
                 goBack()
             }
         }

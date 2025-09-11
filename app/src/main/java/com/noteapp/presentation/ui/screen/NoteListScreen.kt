@@ -50,7 +50,7 @@ import com.noteapp.util.NoteConstant.NOTE_ACTION
 @Composable
 fun NoteListScreen(navController: NavController,
                    viewModel: NoteListViewModel,
-                   onNoteClick:(Int) -> Unit,
+                   onNoteClick:(String) -> Unit,
                    onAddNoteClick:() -> Unit) {
 
     // SnackBar for showing messages
@@ -146,7 +146,7 @@ fun NoteListScreen(navController: NavController,
                                 },
                                 onDeleteNoteClick = {
                                     //viewModel.deleteNote(note) // TODO Remove when implement single source of truth
-                                    viewModel.deleteNoteFirestore(note)
+                                    viewModel.deleteNoteFirestore(noteId = note.id)
                                 }
                             )
                         }
