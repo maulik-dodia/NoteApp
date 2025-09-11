@@ -94,7 +94,9 @@ fun AddEditNoteScreen(
                 }
             )
         },
-        snackbarHost = { SnackbarHost(hostState = snackBarHostState) }
+        snackbarHost = {
+            SnackbarHost(hostState = snackBarHostState)
+        }
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -144,16 +146,7 @@ fun AddEditNoteScreen(
             Button(
                 modifier = Modifier.fillMaxWidth(),
                 onClick = {
-                    // TODO Remove when implement single source of truth
-                    /*viewModel.saveNote {
-                        navController.apply {
-                            previousBackStackEntry
-                                ?.savedStateHandle
-                                ?.set(NOTE_ACTION, if(viewModel.isEdit) noteUpdatedMsg else noteAddedMsg)
-                            popBackStack()
-                        }
-                    }*/
-                    viewModel.saveNoteFirestore {
+                    viewModel.saveNote {
                         navController.apply {
                             previousBackStackEntry
                                 ?.savedStateHandle

@@ -79,8 +79,7 @@ fun NoteListScreen(navController: NavController,
             title = stringResource(id = R.string.delete_all_notes),
             message = stringResource(id = R.string.delete_all_notes_desc),
             onConfirm = {
-                //viewModel.deleteAllNotes() // TODO Remove when implement single source of truth
-                viewModel.deleteAllNotesFirestore()
+                viewModel.deleteAllNotes()
                 showDeleteAllNotesDialog = false
             },
             onDismiss = { showDeleteAllNotesDialog = false }
@@ -145,8 +144,7 @@ fun NoteListScreen(navController: NavController,
                                     onNoteClick(noteId)
                                 },
                                 onDeleteNoteClick = {
-                                    //viewModel.deleteNote(note) // TODO Remove when implement single source of truth
-                                    viewModel.deleteNoteFirestore(noteId = note.id)
+                                    viewModel.deleteNote(noteId = note.id)
                                 }
                             )
                         }
