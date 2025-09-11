@@ -16,7 +16,6 @@ import com.noteapp.presentation.viewmodel.AddEditNoteViewModelFactory
 import com.noteapp.presentation.viewmodel.NoteListViewModel
 import com.noteapp.presentation.viewmodel.NoteListViewModelFactory
 import com.noteapp.util.NoteConstant.ADD_EDIT_NOTE
-import com.noteapp.util.NoteConstant.MINUS_ONE
 import com.noteapp.util.NoteConstant.NOTE_ID
 import com.noteapp.util.NoteConstant.NOTE_LIST
 
@@ -36,24 +35,25 @@ fun NoteNavigation(roomRepository: RoomDBRepository,
                 navController = navController,
                 viewModel = noteListViewModel,
                 onNoteClick = { noteId ->
-                    navController.navigate(route = "$ADD_EDIT_NOTE/$noteId")
+                    navController.navigate(route = "$ADD_EDIT_NOTE?${NOTE_ID}=$noteId")
                 },
                 onAddNoteClick = {
-                    navController.navigate(route = "$ADD_EDIT_NOTE/$MINUS_ONE")
+                    navController.navigate(route = ADD_EDIT_NOTE)
                 }
             )
         }
         // Add Edit Note Screen
         composable(
-            route = "$ADD_EDIT_NOTE/{$NOTE_ID}",
+            route = "$ADD_EDIT_NOTE?${NOTE_ID}={$NOTE_ID}",
             arguments = listOf(
                 navArgument(name = NOTE_ID) {
-                    type = NavType.IntType
-                    defaultValue = MINUS_ONE
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = null
                 }
             )
         ) { navBackStackEntry ->
-            val noteId = navBackStackEntry.arguments?.getInt(NOTE_ID) ?: MINUS_ONE
+            val noteId = navBackStackEntry.arguments?.getString(NOTE_ID)
             val factory = AddEditNoteViewModelFactory(
                 noteId = noteId,
                 roomRepository = roomRepository,

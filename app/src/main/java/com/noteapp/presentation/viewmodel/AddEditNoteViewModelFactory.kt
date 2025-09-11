@@ -6,7 +6,7 @@ import com.noteapp.data.repository.FirestoreDBRepository
 import com.noteapp.data.repository.RoomDBRepository
 
 class AddEditNoteViewModelFactory(
-    private val noteId: Int?,
+    private val noteId: String? = null,
     private val roomRepository: RoomDBRepository,
     private val firestoreRepository: FirestoreDBRepository
 ) : ViewModelProvider.Factory {
