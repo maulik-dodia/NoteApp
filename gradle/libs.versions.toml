@@ -16,6 +16,7 @@ ksp = "2.0.21-1.0.27"
 dagger = "2.57.1"
 googleService = "4.4.3"
 firebase = "26.0.0"
+detekt = "1.23.8"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -57,3 +58,5 @@ kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "ko
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 # Google Services
 google-service = { id = "com.google.gms.google-services", version.ref = "googleService" }
+# Detekt static code analysis tool
+detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
