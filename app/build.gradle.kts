@@ -1,9 +1,12 @@
+import io.gitlab.arturbosch.detekt.Detekt
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
     alias(libs.plugins.google.service)
+    alias(libs.plugins.detekt)
 }
 
 android {
@@ -41,6 +44,27 @@ android {
     }
 }
 
+// Detekt report configuration
+tasks.withType<Detekt>().configureEach {
+    reports {
+        html.required = true
+        html.outputLocation = file(path = "build/reports/detekt/detekt.html")
+    }
+}
+
+// Configuring printDetektReport task, printDetektReport runs even detekt fails
+tasks.named("detekt").configure {
+    finalizedBy("printDetektReport")
+}
+
+// Printing detekt report location even after detekt fails
+tasks.register("printDetektReport") {
+    doLast {
+        val reportPath = file("build/reports/detekt/detekt.html").absolutePath
+        println("📊 Detekt HTML report: file://$reportPath")
+    }
+}
+
 dependencies {
 
     implementation(libs.androidx.core.ktx)
@@ -60,7 +84,7 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
 
     // Project dependencies start here
-    // Navigation component for Compose
+    // Compose navigation dependency
     implementation(libs.navigation.compose)
 
     // Room dependencies
@@ -72,6 +96,6 @@ dependencies {
     implementation(libs.dagger)
     ksp(libs.dagger.compiler)
 
-    // Firebase dependencies
+    // Firebase dependency
     implementation(libs.firebase)
 }
