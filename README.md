@@ -35,6 +35,6 @@ A simple note-taking app for Android built with Jetpack Compose and Firebase.
 
 ## Demo
 
-![App Demo](demo/app-demo.gif)
+![App Demo](demo/app-demo.mp4)
 
 *Showing: Create note → Edit note → Delete note*
