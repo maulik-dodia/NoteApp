@@ -56,5 +56,5 @@ object NoteConstant {
     const val REQUEST_TIMEOUT_ERROR = "Request timed out. Please retry."
     const val NOTE_ALREADY_EXISTS_ERROR = "A note with this ID already exists."
     const val NETWORK_ERROR = "Network unavailable. Check connection and try again."
-    const val PERMISSION_ERROR = "Permission denied. Please sign in or check Firestore rules....."
+    const val PERMISSION_ERROR = "Permission denied. Please sign in or check Firestore rules."
 }
