@@ -3,7 +3,7 @@ name: Hello on testing branch
 on:
   push:
     branches:
-      - testing
+      - feat/test-auto-pr-github-actions
 
 jobs:
   say-hello:
