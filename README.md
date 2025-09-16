@@ -9,12 +9,12 @@ A simple note-taking app for Android built with Jetpack Compose and Firebase.
 - View all notes in a list
 - Delete individual notes
 - Delete all notes
+- Shimmer loading animations
 
 🚧 **Coming Soon**
 - Search notes
 - Filter and sort notes
 - Auto-save notes
-- Loading animations
 
 ## Tech Stack
 
