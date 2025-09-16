@@ -5,6 +5,10 @@ on:
     branches:
       - development   # trigger only when something is merged into development
 
+permissions:
+  contents: write        # allow pushing
+  pull-requests: write   # allow creating PRs
+
 jobs:
   create-pr:
     runs-on: ubuntu-latest
