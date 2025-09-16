@@ -1,0 +1,26 @@
+name: Auto PR from development to master
+
+on:
+  push:
+    branches:
+      - development   # trigger only when something is merged into development
+
+jobs:
+  create-pr:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout development branch
+        uses: actions/checkout@v4
+        with:
+          ref: development
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v7.0.8
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          base: master          # target branch
+          branch: development   # source branch
+          title: "Align master with Development"           # PR title
+          body: "This PR aligns master with development."            # PR description
+          draft: false          # set true if you want draft PR
