@@ -4,6 +4,11 @@ on:
   push:
     branches:
       - development   # trigger only when something is merged into development
+  pull_request:
+      types:
+        - closed        # triggers when PR is closed
+      branches:
+        - development
 
 permissions:
   contents: write        # allow pushing
@@ -11,6 +16,7 @@ permissions:
 
 jobs:
   create-pr:
+    if: github.event.pull_request.merged == true || github.event_name == 'push'
     runs-on: ubuntu-latest
 
     steps:
@@ -26,5 +32,5 @@ jobs:
           base: master          # target branch
           branch: development   # source branch
           title: "Align master with Development"           # PR title
-          body: "This PR aligns master with development."            # PR description
+          body: "This PR aligns master with development."  # PR description
           draft: false          # set true if you want draft PR
