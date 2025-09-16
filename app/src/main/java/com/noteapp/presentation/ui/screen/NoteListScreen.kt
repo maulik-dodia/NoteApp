@@ -10,7 +10,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -41,9 +40,11 @@ import com.noteapp.data.repository.FirestoreDBRepositoryImpl
 import com.noteapp.data.repository.RoomDBRepositoryImpl
 import com.noteapp.presentation.ui.component.ConfirmationDialog
 import com.noteapp.presentation.ui.component.NoteItem
+import com.noteapp.presentation.ui.component.NoteItemShimmer
 import com.noteapp.presentation.viewmodel.NoteListUiState
 import com.noteapp.presentation.viewmodel.NoteListViewModel
 import com.noteapp.preview.FakeNoteDao
+import com.noteapp.util.NoteConstant.EIGHT
 import com.noteapp.util.NoteConstant.NOTE_ACTION
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -73,7 +74,7 @@ fun NoteListScreen(navController: NavController,
     }
 
     // Confirmation dialog for deleting all notes
-    var showDeleteAllNotesDialog by remember { mutableStateOf(false) }
+    var showDeleteAllNotesDialog by remember { mutableStateOf(value = false) }
     if(showDeleteAllNotesDialog) {
         ConfirmationDialog(
             title = stringResource(id = R.string.delete_all_notes),
@@ -125,11 +126,10 @@ fun NoteListScreen(navController: NavController,
     ) { paddingValues ->
         when (uiState) {
             NoteListUiState.Loading -> {
-                Column(modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    CircularProgressIndicator()
+                LazyColumn(modifier = Modifier.padding(paddingValues)) {
+                    items(count = EIGHT) {
+                        NoteItemShimmer()
+                    }
                 }
             }
 
