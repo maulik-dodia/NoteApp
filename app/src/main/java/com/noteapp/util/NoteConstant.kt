@@ -14,10 +14,21 @@ object NoteConstant {
     const val ADD_EDIT_NOTE = "add_edit_note"
 
     // Numbers
+    // Positive
     const val ZERO = 0
     const val ONE = 1
     const val TWO = 2
     const val THREE = 3
+    const val EIGHT = 8
+    const val THOUSAND = 1000
+    // Negative
+    const val MINUS_TWO = -2
+    // Float
+    const val FLOAT_ONE = 1f
+    const val FLOAT_POINT_TWO = 0.2f
+    const val FLOAT_POINT_SIX = 0.6f
+    // Long
+    const val LONG_THREE_THOUSAND = 3000L
 
     // Rest
     const val NO = "No"

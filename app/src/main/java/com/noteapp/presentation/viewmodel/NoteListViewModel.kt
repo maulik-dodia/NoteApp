@@ -8,9 +8,11 @@ import com.noteapp.data.repository.RoomDBRepository
 import com.noteapp.domain.model.Note
 import com.noteapp.util.NoteConstant.ALL_NOTES_DELETED_MSG
 import com.noteapp.util.NoteConstant.GENERIC_ERROR
+import com.noteapp.util.NoteConstant.LONG_THREE_THOUSAND
 import com.noteapp.util.NoteConstant.NOTE_DELETED_MSG
 import com.noteapp.util.getFirestoreError
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -41,6 +43,7 @@ class NoteListViewModel(
     private fun observeNoteList() {
         notesJob?.cancel()
         notesJob = viewModelScope.launch {
+            delay(timeMillis = LONG_THREE_THOUSAND) // To show shimmer effect!
             firestoreRepository.observeNoteList()
                 .onStart {
                     _uiState.value = NoteListUiState.Loading
