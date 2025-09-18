@@ -16,3 +16,6 @@ local.properties
 /.idea
 app/google-services.json
 /.kotlin
+personal_github_ssh_key.pub
+personal_github_ssh_key
+app/src/main/java/com/noteapp/ProjectStructure.kt
