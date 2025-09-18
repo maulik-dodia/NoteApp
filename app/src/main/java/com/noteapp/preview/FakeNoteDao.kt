@@ -19,15 +19,23 @@ class FakeNoteDao : NoteDao {
         )
     }
 
-    override suspend fun insertNote(note: NoteEntity) {}
+    override suspend fun insertNote(note: NoteEntity) {
+        // Do not require actual body, added this comment to prevent detekt's EmptyFunctionBlock error
+    }
 
     override fun getNoteById(id: Int): Flow<NoteEntity?> = flow {
         NoteEntity(id = id, title = PREVIEW_NOTE_TITLE, description = PREVIEW_NOTE_DESC)
     }
 
-    override suspend fun updateNote(note: NoteEntity) {}
+    override suspend fun updateNote(note: NoteEntity) {
+        // Do not require actual body, added this comment to prevent detekt's EmptyFunctionBlock error
+    }
 
-    override suspend fun deleteAllNotes() {}
+    override suspend fun deleteAllNotes() {
+        // Do not require actual body, added this comment to prevent detekt's EmptyFunctionBlock error
+    }
 
-    override suspend fun deleteNote(note: NoteEntity) {}
+    override suspend fun deleteNote(note: NoteEntity) {
+        // Do not require actual body, added this comment to prevent detekt's EmptyFunctionBlock error
+    }
 }

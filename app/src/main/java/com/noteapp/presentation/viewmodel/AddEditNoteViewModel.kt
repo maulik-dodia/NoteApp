@@ -10,8 +10,6 @@ import com.noteapp.data.repository.FirestoreDBRepository
 import com.noteapp.data.repository.RoomDBRepository
 import com.noteapp.domain.model.Note
 import com.noteapp.util.NoteConstant.EMPTY_STRING
-import com.noteapp.util.NoteConstant.FAILED_TO_LOAD_NOTE
-import com.noteapp.util.NoteConstant.GENERIC_ERROR
 import com.noteapp.util.NoteConstant.NOTE_NOT_FOUND_ERROR
 import com.noteapp.util.getFirestoreError
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -28,11 +26,11 @@ class AddEditNoteViewModel(
     private val _snackBarEvent = MutableSharedFlow<String>()
     val snackBarEvent = _snackBarEvent.asSharedFlow()
 
-    var isEdit by mutableStateOf(false)
-    var noteTitle by mutableStateOf(EMPTY_STRING)
-    var noteDesc by mutableStateOf(EMPTY_STRING)
-    var noteTitleError by mutableStateOf(false)
-    var noteDescError by mutableStateOf(false)
+    var isEdit by mutableStateOf(value = false)
+    var noteTitle by mutableStateOf(value = EMPTY_STRING)
+    var noteDesc by mutableStateOf(value = EMPTY_STRING)
+    var noteTitleError by mutableStateOf(value = false)
+    var noteDescError by mutableStateOf(value = false)
 
     private var noteToBeEdited: Note? = null
 
@@ -55,9 +53,6 @@ class AddEditNoteViewModel(
                 } catch (ex: FirebaseFirestoreException) {
                     val errorMsg = getFirestoreError(firestoreException = ex)
                     _snackBarEvent.emit(value = errorMsg)
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    _snackBarEvent.emit(value = FAILED_TO_LOAD_NOTE)
                 }
             }
         }
@@ -94,9 +89,6 @@ class AddEditNoteViewModel(
             } catch (ex: FirebaseFirestoreException) {
                 val errorMsg = getFirestoreError(firestoreException = ex)
                 _snackBarEvent.emit(value = errorMsg)
-            } catch (e: Exception) {
-                e.printStackTrace()
-                _snackBarEvent.emit(value = GENERIC_ERROR)
             }
         }
     }
@@ -112,9 +104,6 @@ class AddEditNoteViewModel(
             } catch (ex: FirebaseFirestoreException) {
                 val errorMsg = getFirestoreError(firestoreException = ex)
                 _snackBarEvent.emit(value = errorMsg)
-            } catch (e: Exception) {
-                e.printStackTrace()
-                _snackBarEvent.emit(value = GENERIC_ERROR)
             }
         }
     }

@@ -177,7 +177,10 @@ fun PreviewAddEditNoteScreen() {
     val firestore = FirebaseFirestore.getInstance()
     val fakeRoomDBRepository = RoomDBRepositoryImpl(noteDao = noteDao)
     val fakeFirestoreRepository = FirestoreDBRepositoryImpl(firestore = firestore)
-    val dummyViewModel = AddEditNoteViewModel(roomRepository = fakeRoomDBRepository, firestoreRepository = fakeFirestoreRepository).apply {
+    val dummyViewModel = AddEditNoteViewModel(
+        roomRepository = fakeRoomDBRepository,
+        firestoreRepository = fakeFirestoreRepository
+    ).apply {
         noteTitle = PREVIEW_NOTE_TITLE
         noteDesc = PREVIEW_NOTE_DESC
         noteTitleError = true
