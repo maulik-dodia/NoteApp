@@ -25,14 +25,10 @@ class FirestoreDBRepositoryImpl @Inject constructor(private val firestore: Fireb
     }
 
     override suspend fun insertNote(note: Note): String {
-        return try {
-            val document = noteCollection.document()
-            val noteWithId = note.copy(id = document.id)
-            document.set(noteWithId).await()
-            document.id
-        } catch (e: Exception) {
-            throw e
-        }
+        val document = noteCollection.document()
+        val noteWithId = note.copy(id = document.id)
+        document.set(noteWithId).await()
+        return document.id
     }
 
     override suspend fun getNoteById(id: String): Note? {

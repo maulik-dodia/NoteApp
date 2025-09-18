@@ -62,7 +62,8 @@ class AppModule(private val application: Application) {
 
     // ViewModel providers
     @Provides
-    fun provideNoteListViewModelFactory(roomRepository: RoomDBRepository, firestoreRepository: FirestoreDBRepository): NoteListViewModelFactory {
+    fun provideNoteListViewModelFactory(roomRepository: RoomDBRepository,
+                                        firestoreRepository: FirestoreDBRepository): NoteListViewModelFactory {
         return NoteListViewModelFactory(roomRepository = roomRepository, firestoreRepository = firestoreRepository)
     }
 }
