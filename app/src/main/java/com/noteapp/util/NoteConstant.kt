@@ -31,8 +31,6 @@ object NoteConstant {
     const val LONG_THREE_THOUSAND = 3000L
 
     // Rest
-    const val NO = "No"
-    const val YES = "Yes"
     const val EMPTY_STRING = ""
     const val NOTE_ID = "noteId"
     const val TIMESTAMP = "timestamp"
@@ -48,7 +46,6 @@ object NoteConstant {
     const val NOTE_NOT_FOUND_ERROR = "Note not found."
     const val GENERIC_ERROR = "Something went wrong."
     const val SAVE_NOTE_ERROR_1 = "Failed to save note"
-    const val FAILED_TO_LOAD_NOTE = "Failed to load note."
     const val ABORT_ERROR = "Write conflicted. Please retry."
     const val NOTE_DELETED_MSG = "Note deleted successfully."
     const val RESOURCE_NOT_FOUND_ERROR = "Resource not found."

@@ -47,7 +47,7 @@ import com.noteapp.preview.FakeNoteDao
 import com.noteapp.util.NoteConstant.EIGHT
 import com.noteapp.util.NoteConstant.NOTE_ACTION
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(markerClass = [ExperimentalMaterial3Api::class])
 @Composable
 fun NoteListScreen(navController: NavController,
                    viewModel: NoteListViewModel,
@@ -65,8 +65,11 @@ fun NoteListScreen(navController: NavController,
             }
         }
     }
-    // As we are in same screen for SingleNoteDelete and AllNotesDelete functionalities, we can't use savedStateHandle approach to show snackBar
-    // So, using ViewModel's SharedFlow to show snackBar for these events
+    /*
+    As we are in same screen for SingleNoteDelete and AllNotesDelete functionalities,
+    We can't use savedStateHandle approach to show snackBar.
+    So, using ViewModel's SharedFlow to show snackBar for these events
+    */
     LaunchedEffect(key1 = viewModel.snackBarEvent) {
         viewModel.snackBarEvent.collect { msg ->
             snackBarHostState.showSnackbar(message = msg)
@@ -179,7 +182,10 @@ fun PreviewNoteListScreen() {
     val firestore = FirebaseFirestore.getInstance()
     val fakeRoomRepository = RoomDBRepositoryImpl(noteDao = noteDao)
     val fakeFirestoreRepository = FirestoreDBRepositoryImpl(firestore = firestore)
-    val dummyViewModel = NoteListViewModel(roomRepository = fakeRoomRepository, firestoreRepository = fakeFirestoreRepository)
+    val dummyViewModel = NoteListViewModel(
+        roomRepository = fakeRoomRepository,
+        firestoreRepository = fakeFirestoreRepository
+    )
     val navController = rememberNavController()
     NoteListScreen(
         onNoteClick = { },

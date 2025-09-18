@@ -22,4 +22,8 @@
     <string name="description_label">Description</string>
     <string name="field_required">This field is required</string>
     <string name="delete_note_desc">Are you sure you want to delete this note?</string>
+
+    <!--Common-->
+    <string name="no">No</string>
+    <string name="yes">Yes</string>
 </resources>

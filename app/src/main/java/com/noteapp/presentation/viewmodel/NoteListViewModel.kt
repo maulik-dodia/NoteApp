@@ -73,9 +73,6 @@ class NoteListViewModel(
             } catch (ex: FirebaseFirestoreException) {
                 val errorMsg = getFirestoreError(firestoreException = ex)
                 _snackBarEvent.emit(value = errorMsg)
-            } catch (e: Exception) {
-                e.printStackTrace()
-                _snackBarEvent.emit(value = GENERIC_ERROR)
             }
         }
     }
@@ -91,9 +88,6 @@ class NoteListViewModel(
             } catch (ex: FirebaseFirestoreException) {
                 val errorMsg = getFirestoreError(firestoreException = ex)
                 _snackBarEvent.emit(value = errorMsg)
-            } catch (e: Exception) {
-                e.printStackTrace()
-                _uiState.value = NoteListUiState.Error(message = GENERIC_ERROR)
             }
         }
     }
