@@ -1,7 +1,7 @@
 package com.noteapp.presentation.ui.screen
 
-import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -29,7 +29,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavController
@@ -38,6 +37,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.noteapp.R
 import com.noteapp.data.repository.FirestoreDBRepositoryImpl
 import com.noteapp.data.repository.RoomDBRepositoryImpl
+import com.noteapp.domain.model.Note
 import com.noteapp.presentation.ui.component.ConfirmationDialog
 import com.noteapp.presentation.ui.component.NoteItem
 import com.noteapp.presentation.ui.component.NoteItemShimmer
@@ -56,25 +56,11 @@ fun NoteListScreen(navController: NavController,
 
     // SnackBar for showing messages
     val snackBarHostState = remember { SnackbarHostState() }
-    LaunchedEffect(key1 = Unit) {
-        val savedStateHandle = navController.currentBackStackEntry?.savedStateHandle
-        savedStateHandle?.get<String>(NOTE_ACTION)?.let { noteState ->
-            noteState.let {
-                snackBarHostState.showSnackbar(message = noteState)
-                savedStateHandle.remove<Boolean>(key = NOTE_ACTION)
-            }
-        }
-    }
-    /*
-    As we are in same screen for SingleNoteDelete and AllNotesDelete functionalities,
-    We can't use savedStateHandle approach to show snackBar.
-    So, using ViewModel's SharedFlow to show snackBar for these events
-    */
-    LaunchedEffect(key1 = viewModel.snackBarEvent) {
-        viewModel.snackBarEvent.collect { msg ->
-            snackBarHostState.showSnackbar(message = msg)
-        }
-    }
+    ShowSnackBarMsg(
+        navController = navController,
+        viewModel = viewModel,
+        snackBarHostState = snackBarHostState
+    )
 
     // Confirmation dialog for deleting all notes
     var showDeleteAllNotesDialog by remember { mutableStateOf(value = false) }
@@ -95,83 +81,151 @@ fun NoteListScreen(navController: NavController,
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(text = stringResource(id = R.string.note_list_title))
-                },
-                navigationIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Home,
-                        contentDescription = stringResource(id = R.string.home)
-                    )
-                },
-                actions = {
-                    if (hasNotes) {
-                        TextButton(onClick = { showDeleteAllNotesDialog = true }) {
-                            Text(text = stringResource(id = R.string.delete_all))
-                        }
-                    }
-                }
-            )
+            NoteListTopBar(hasNotes = hasNotes) {
+                showDeleteAllNotesDialog = true
+            }
         },
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = onAddNoteClick,
-                containerColor = MaterialTheme.colorScheme.primary
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = stringResource(id = R.string.add_note)
-                )
+            NoteAddEdit {
+                onAddNoteClick()
             }
         },
-        snackbarHost = { SnackbarHost(hostState = snackBarHostState) }
+        snackbarHost = {
+            SnackbarHost(hostState = snackBarHostState)
+        }
     ) { paddingValues ->
-        when (uiState) {
-            NoteListUiState.Loading -> {
-                LazyColumn(modifier = Modifier.padding(paddingValues)) {
-                    items(count = EIGHT) {
-                        NoteItemShimmer()
-                    }
+        Box(modifier = Modifier.padding(paddingValues = paddingValues)) {
+            when (uiState) {
+                NoteListUiState.Loading -> {
+                    NoteShimmer()
                 }
-            }
 
-            is NoteListUiState.Success -> {
-                val noteList = (uiState as NoteListUiState.Success).noteList
-                if(noteList.isNotEmpty()) {
-                    LazyColumn(modifier = Modifier.padding(paddingValues)) {
-                        items(items = noteList) { note ->
-                            NoteItem(
-                                note = note,
-                                onNoteClick = { noteId ->
-                                    onNoteClick(noteId)
-                                },
-                                onDeleteNoteClick = {
-                                    viewModel.deleteNote(noteId = note.id)
-                                }
-                            )
+                is NoteListUiState.Success -> {
+                    val noteList = (uiState as NoteListUiState.Success).noteList
+                    if(noteList.isNotEmpty()) {
+                        NoteList(noteList = noteList, onNoteClick = onNoteClick) { noteId ->
+                            viewModel.deleteNote(noteId = noteId)
                         }
-                    }
-                } else {
-                    Column(modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues),
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            style = MaterialTheme.typography.displaySmall,
-                            text = stringResource(id = R.string.no_notes_available)
-                        )
+                    } else {
+                        NoteListEmpty()
                     }
                 }
-            }
 
-            is NoteListUiState.Error -> {
-                val errorMsg = (uiState as NoteListUiState.Error).message
-                Toast.makeText(LocalContext.current, errorMsg, Toast.LENGTH_LONG).show()
+                is NoteListUiState.Error -> {
+                    val errorMsg = (uiState as NoteListUiState.Error).message
+                    viewModel.showError(errStr = errorMsg)
+                }
             }
         }
+    }
+}
+
+@Composable
+fun ShowSnackBarMsg(
+    navController: NavController,
+    viewModel: NoteListViewModel,
+    snackBarHostState: SnackbarHostState
+) {
+    LaunchedEffect(key1 = Unit) {
+        val savedStateHandle = navController.currentBackStackEntry?.savedStateHandle
+        savedStateHandle?.get<String>(NOTE_ACTION)?.let { noteState ->
+            noteState.let {
+                snackBarHostState.showSnackbar(message = noteState)
+                savedStateHandle.remove<Boolean>(key = NOTE_ACTION)
+            }
+        }
+    }
+    /*
+    As we are in same screen for SingleNoteDelete and AllNotesDelete functionalities,
+    We can't use savedStateHandle approach to show snackBar.
+    So, using ViewModel's SharedFlow to show snackBar for these events
+    */
+    LaunchedEffect(key1 = viewModel.snackBarEvent) {
+        viewModel.snackBarEvent.collect { msg ->
+            snackBarHostState.showSnackbar(message = msg)
+        }
+    }
+}
+
+// Note topbar
+@OptIn(markerClass = [ExperimentalMaterial3Api::class])
+@Composable
+fun NoteListTopBar(hasNotes: Boolean, onDeleteAllNotesClick:() -> Unit) {
+    TopAppBar(
+        title = {
+            Text(text = stringResource(id = R.string.note_list_title))
+        },
+        navigationIcon = {
+            Icon(
+                imageVector = Icons.Default.Home,
+                contentDescription = stringResource(id = R.string.home)
+            )
+        },
+        actions = {
+            if (hasNotes) {
+                TextButton(onClick = {
+                    onDeleteAllNotesClick()
+                }) {
+                    Text(text = stringResource(id = R.string.delete_all))
+                }
+            }
+        }
+    )
+}
+
+// Note add edit
+@Composable
+fun NoteAddEdit(onAddNoteClick: () -> Unit) {
+    FloatingActionButton(
+        onClick = onAddNoteClick,
+        containerColor = MaterialTheme.colorScheme.primary
+    ) {
+        Icon(
+            imageVector = Icons.Default.Add,
+            contentDescription = stringResource(id = R.string.add_note)
+        )
+    }
+}
+
+// Note shimmer
+@Composable
+fun NoteShimmer() {
+    LazyColumn {
+        items(count = EIGHT) {
+            NoteItemShimmer()
+        }
+    }
+}
+
+// Note list success
+@Composable
+fun NoteList(noteList: List<Note>, onNoteClick:(String) -> Unit, onDeleteNote:(String) -> Unit) {
+    LazyColumn {
+        items(items = noteList) { note ->
+            NoteItem(
+                note = note,
+                onNoteClick = { noteId ->
+                    onNoteClick(noteId)
+                },
+                onDeleteNoteClick = {
+                    onDeleteNote(note.id)
+                }
+            )
+        }
+    }
+}
+
+// Note list empty
+@Composable
+fun NoteListEmpty() {
+    Column(modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            style = MaterialTheme.typography.displaySmall,
+            text = stringResource(id = R.string.no_notes_available)
+        )
     }
 }
 

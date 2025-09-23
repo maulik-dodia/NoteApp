@@ -91,6 +91,12 @@ class NoteListViewModel(
             }
         }
     }
+
+    fun showError(errStr: String) {
+        viewModelScope.launch {
+            _snackBarEvent.emit(value = errStr)
+        }
+    }
 }
 
 sealed class NoteListUiState {
