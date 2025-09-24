@@ -3,10 +3,13 @@
 
     <!--Note List Screen-->
     <string name="home">Home</string>
+    <string name="clear">Clear</string>
     <string name="delete">Delete</string>
+    <string name="search">Search</string>
     <string name="add_note">Add Note</string>
     <string name="note_list_title">Notes</string>
     <string name="delete_all">Delete All</string>
+    <string name="search_notes">Search notes</string>
     <string name="delete_all_notes">Delete All Notes</string>
     <string name="note_added">Note added successfully!</string>
     <string name="no_notes_available">No Notes Available</string>
