@@ -2,6 +2,7 @@ package com.noteapp.presentation.ui.screen
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -41,7 +42,7 @@ import com.noteapp.util.NoteConstant.NOTE_ACTION
 import com.noteapp.util.NoteConstant.PREVIEW_NOTE_DESC
 import com.noteapp.util.NoteConstant.PREVIEW_NOTE_TITLE
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(markerClass = [ExperimentalMaterial3Api::class])
 @Composable
 fun AddEditNoteScreen(
     navController: NavController,
@@ -79,93 +80,127 @@ fun AddEditNoteScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(text = stringResource(id = R.string.add_note))
-                },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(id = R.string.back)
-                        )
-                    }
-                }
+            AddEditNoteTopBar(
+                onBackClick = { navController.popBackStack() }
             )
         },
         snackbarHost = {
             SnackbarHost(hostState = snackBarHostState)
         }
     ) { paddingValues ->
-        Column(
+        AddEditNoteContent(
+            paddingValues = paddingValues,
+            viewModel = viewModel,
+            onSaveClick = {
+                navController.apply {
+                    previousBackStackEntry
+                        ?.savedStateHandle
+                        ?.set(NOTE_ACTION, if(viewModel.isEdit) noteUpdatedMsg else noteAddedMsg)
+                    popBackStack()
+                }
+            },
+            onDeleteClick = { showDeleteNoteDialog = true }
+        )
+    }
+}
+
+@Composable
+fun AddEditNoteContent(paddingValues: PaddingValues,
+                       viewModel: AddEditNoteViewModel,
+                       onSaveClick: () -> Unit,
+                       onDeleteClick: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(paddingValues)
+            .padding(all = 16.dp),
+        verticalArrangement = Arrangement.Top
+    ) {
+        OutlinedTextField(
+            modifier = Modifier.fillMaxWidth(),
+            label = { Text(text = stringResource(id = R.string.title_label)) },
+            value = viewModel.noteTitle,
+            onValueChange = { newTitle ->
+                viewModel.apply {
+                    noteTitle = newTitle
+                    noteTitleError = false
+                    onTitleChange(newTitle)
+                }
+            },
+            isError = viewModel.noteTitleError,
+            supportingText = {
+                if (viewModel.noteTitleError) {
+                    Text(text = stringResource(id = R.string.field_required))
+                }
+            }
+        )
+        OutlinedTextField(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(all = 16.dp),
-            verticalArrangement = Arrangement.Top
+                .fillMaxWidth()
+                .weight(weight = FLOAT_ONE),
+            value = viewModel.noteDesc,
+            onValueChange = { newDesc ->
+                viewModel.apply {
+                    noteDesc = newDesc
+                    noteDescError = false
+                    onDescChange(newDesc)
+                }
+            },
+            label = { Text(text = stringResource(id = R.string.description_label)) },
+            isError = viewModel.noteDescError,
+            supportingText = {
+                if (viewModel.noteDescError) {
+                    Text(text = stringResource(id = R.string.field_required))
+                }
+            }
+        )
+        SaveDeleteButton(
+            isEdit = viewModel.isEdit,
+            isUserInputValid = viewModel.isUserInputValid,
+            onSaveClick = {
+                viewModel.saveNote { onSaveClick() }
+            },
+            onDeleteClick = { onDeleteClick() }
+        )
+    }
+}
+
+@OptIn(markerClass = [ExperimentalMaterial3Api::class])
+@Composable
+fun AddEditNoteTopBar(onBackClick:() -> Unit) {
+    TopAppBar(
+        title = {
+            Text(text = stringResource(id = R.string.add_note))
+        },
+        navigationIcon = {
+            IconButton(onClick = { onBackClick() }) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = stringResource(id = R.string.back)
+                )
+            }
+        }
+    )
+}
+
+@Composable
+fun SaveDeleteButton(isEdit: Boolean = false,
+                     isUserInputValid: Boolean = false,
+                     onSaveClick:() -> Unit,
+                     onDeleteClick:() -> Unit) {
+    Button(
+        modifier = Modifier.fillMaxWidth(),
+        onClick = { onSaveClick() },
+        enabled = isUserInputValid
+    ) {
+        Text(text = stringResource(id = R.string.save))
+    }
+    if(isEdit) {
+        Button(
+            modifier = Modifier.fillMaxWidth(),
+            onClick = { onDeleteClick() }
         ) {
-            OutlinedTextField(
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text(text = stringResource(id = R.string.title_label)) },
-                value = viewModel.noteTitle,
-                onValueChange = { newTitle ->
-                    viewModel.apply {
-                        noteTitle = newTitle
-                        noteTitleError = false
-                        onTitleChange(newTitle)
-                    }
-                },
-                isError = viewModel.noteTitleError,
-                supportingText = {
-                    if (viewModel.noteTitleError) {
-                        Text(text = stringResource(id = R.string.field_required))
-                    }
-                }
-            )
-            OutlinedTextField(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(weight = FLOAT_ONE),
-                value = viewModel.noteDesc,
-                onValueChange = { newDesc ->
-                    viewModel.apply {
-                        noteDesc = newDesc
-                        noteDescError = false
-                        onDescChange(newDesc)
-                    }
-                },
-                label = { Text(text = stringResource(id = R.string.description_label)) },
-                isError = viewModel.noteDescError,
-                supportingText = {
-                    if (viewModel.noteDescError) {
-                        Text(text = stringResource(id = R.string.field_required))
-                    }
-                }
-            )
-            Button(
-                modifier = Modifier.fillMaxWidth(),
-                onClick = {
-                    viewModel.saveNote {
-                        navController.apply {
-                            previousBackStackEntry
-                                ?.savedStateHandle
-                                ?.set(NOTE_ACTION, if(viewModel.isEdit) noteUpdatedMsg else noteAddedMsg)
-                            popBackStack()
-                        }
-                    }
-                },
-                enabled = viewModel.isUserInputValid
-            ) {
-                Text(text = stringResource(id = R.string.save))
-            }
-            if(viewModel.isEdit) {
-                Button(
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = { showDeleteNoteDialog = true }
-                ) {
-                    Text(text = stringResource(id = R.string.delete))
-                }
-            }
+            Text(text = stringResource(id = R.string.delete))
         }
     }
 }
