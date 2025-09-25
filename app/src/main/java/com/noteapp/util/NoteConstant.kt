@@ -20,7 +20,7 @@ object NoteConstant {
     const val TWO = 2
     const val THREE = 3
     const val EIGHT = 8
-    const val THOUSAND = 1000
+    const val ONE_THOUSAND = 1000
     // Negative
     const val MINUS_TWO = -2
     // Float
@@ -28,12 +28,14 @@ object NoteConstant {
     const val FLOAT_POINT_TWO = 0.2f
     const val FLOAT_POINT_SIX = 0.6f
     // Long
-    const val LONG_THREE_THOUSAND = 3000L
+    const val LONG_FIFTY = 50L
+    const val LONG_FOUR_HUNDRED = 400L
 
     // Rest
+    const val TITLE = "title"
     const val EMPTY_STRING = ""
     const val NOTE_ID = "noteId"
-    const val TIMESTAMP = "timestamp"
+    const val USER_ID = "userId"
     const val NOTE_ACTION = "note_action"
     const val DD_MMM_YY_HHMM_A = "dd-MMM-yy hh:mm a"
 

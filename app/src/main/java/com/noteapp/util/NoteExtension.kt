@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.IntSize
 import com.noteapp.util.NoteConstant.FLOAT_POINT_SIX
 import com.noteapp.util.NoteConstant.FLOAT_POINT_TWO
 import com.noteapp.util.NoteConstant.MINUS_TWO
-import com.noteapp.util.NoteConstant.THOUSAND
+import com.noteapp.util.NoteConstant.ONE_THOUSAND
 import com.noteapp.util.NoteConstant.TWO
 
 fun Modifier.shimmerEffect(): Modifier = composed {
@@ -30,7 +30,7 @@ fun Modifier.shimmerEffect(): Modifier = composed {
         initialValue = MINUS_TWO * size.width.toFloat(),
         targetValue = TWO * size.width.toFloat(),
         animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = THOUSAND)
+            animation = tween(durationMillis = ONE_THOUSAND)
         )
     )
     background(

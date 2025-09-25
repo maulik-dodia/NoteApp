@@ -97,7 +97,7 @@ fun NoteListScreen(navController: NavController,
 
     Scaffold(
         topBar = {
-            NoteListTopBar(hasNotes = hasNotes) {
+            NoteListTopBar(viewModel = viewModel, hasNotes = hasNotes) {
                 showDeleteAllNotesDialog = true
             }
         },
@@ -166,16 +166,17 @@ fun ShowSnackBarMsg(
 // Note topbar
 @OptIn(markerClass = [ExperimentalMaterial3Api::class])
 @Composable
-fun NoteListTopBar(hasNotes: Boolean, onDeleteAllNotesClick:() -> Unit) {
-
-    var searchQuery by remember { mutableStateOf(value = EMPTY_STRING) }
-
+fun NoteListTopBar(
+    viewModel: NoteListViewModel,
+    hasNotes: Boolean,
+    onDeleteAllNotesClick:() -> Unit
+) {
     TopAppBar(
         title = {
             SearchBar(
-                searchQuery = searchQuery,
+                searchQuery = viewModel.searchQueryToShowInSearchBox,
                 onQueryChange = { newQuery ->
-                    searchQuery = newQuery
+                    viewModel.onQueryChanged(newQuery = newQuery)
                 }
             )
         },
