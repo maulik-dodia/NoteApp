@@ -1,24 +1,33 @@
 package com.noteapp.presentation.ui.screen
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -29,8 +38,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.google.firebase.firestore.FirebaseFirestore
@@ -45,6 +60,7 @@ import com.noteapp.presentation.viewmodel.NoteListUiState
 import com.noteapp.presentation.viewmodel.NoteListViewModel
 import com.noteapp.preview.FakeNoteDao
 import com.noteapp.util.NoteConstant.EIGHT
+import com.noteapp.util.NoteConstant.EMPTY_STRING
 import com.noteapp.util.NoteConstant.NOTE_ACTION
 
 @OptIn(markerClass = [ExperimentalMaterial3Api::class])
@@ -81,7 +97,7 @@ fun NoteListScreen(navController: NavController,
 
     Scaffold(
         topBar = {
-            NoteListTopBar(hasNotes = hasNotes) {
+            NoteListTopBar(viewModel = viewModel, hasNotes = hasNotes) {
                 showDeleteAllNotesDialog = true
             }
         },
@@ -150,15 +166,18 @@ fun ShowSnackBarMsg(
 // Note topbar
 @OptIn(markerClass = [ExperimentalMaterial3Api::class])
 @Composable
-fun NoteListTopBar(hasNotes: Boolean, onDeleteAllNotesClick:() -> Unit) {
+fun NoteListTopBar(
+    viewModel: NoteListViewModel,
+    hasNotes: Boolean,
+    onDeleteAllNotesClick:() -> Unit
+) {
     TopAppBar(
         title = {
-            Text(text = stringResource(id = R.string.note_list_title))
-        },
-        navigationIcon = {
-            Icon(
-                imageVector = Icons.Default.Home,
-                contentDescription = stringResource(id = R.string.home)
+            SearchBar(
+                searchQuery = viewModel.searchQueryToShowInSearchBox,
+                onQueryChange = { newQuery ->
+                    viewModel.onQueryChanged(newQuery = newQuery)
+                }
             )
         },
         actions = {
@@ -170,6 +189,65 @@ fun NoteListTopBar(hasNotes: Boolean, onDeleteAllNotesClick:() -> Unit) {
                 }
             }
         }
+    )
+}
+
+@Composable
+fun SearchBar(searchQuery: String, onQueryChange:(String) -> Unit) {
+
+    val textStyle = MaterialTheme.typography.bodyLarge
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
+
+    OutlinedTextField(
+        value = searchQuery,
+        onValueChange = { newQuery ->
+            onQueryChange(newQuery)
+        },
+        singleLine = true,
+        textStyle = textStyle,
+        placeholder = {
+            Text(text = stringResource(id = R.string.search_notes), style = textStyle)
+        },
+        keyboardOptions = KeyboardOptions(
+            imeAction = ImeAction.Search,
+            capitalization = KeyboardCapitalization.Sentences
+        ),
+        keyboardActions = KeyboardActions(
+            onSearch = {
+                keyboardController?.hide()
+                focusManager.clearFocus()
+            }
+        ),
+        leadingIcon = {
+            Icon(
+                imageVector = Icons.Default.Search,
+                contentDescription = stringResource(id = R.string.search)
+            )
+        },
+        trailingIcon = {
+            if (searchQuery.isNotEmpty()) {
+                IconButton(onClick = { onQueryChange(EMPTY_STRING) }) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = stringResource(id = R.string.clear)
+                    )
+                }
+            }
+        },
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(
+                width = 1.dp,
+                color = Color.LightGray,
+                shape = RoundedCornerShape(size = 32.dp)
+            ),
+        colors = TextFieldDefaults.colors(
+            focusedContainerColor = Color.Transparent,
+            unfocusedContainerColor = Color.Transparent,
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent
+        )
     )
 }
 
@@ -200,17 +278,26 @@ fun NoteShimmer() {
 // Note list success
 @Composable
 fun NoteList(noteList: List<Note>, onNoteClick:(String) -> Unit, onDeleteNote:(String) -> Unit) {
-    LazyColumn {
-        items(items = noteList) { note ->
-            NoteItem(
-                note = note,
-                onNoteClick = { noteId ->
-                    onNoteClick(noteId)
-                },
-                onDeleteNoteClick = {
-                    onDeleteNote(note.id)
-                }
-            )
+    Column {
+        Text(
+            modifier = Modifier.padding(start = 24.dp, top = 24.dp),
+            style = MaterialTheme.typography.headlineSmall,
+            text = stringResource(id = R.string.note_list_title)
+        )
+        LazyColumn(
+            modifier = Modifier.padding(top = 16.dp)
+        ) {
+            items(items = noteList) { note ->
+                NoteItem(
+                    note = note,
+                    onNoteClick = { noteId ->
+                        onNoteClick(noteId)
+                    },
+                    onDeleteNoteClick = {
+                        onDeleteNote(note.id)
+                    }
+                )
+            }
         }
     }
 }
