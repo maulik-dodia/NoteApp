@@ -1,5 +1,8 @@
 package com.noteapp.presentation.viewmodel
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.firestore.FirebaseFirestoreException
@@ -7,18 +10,21 @@ import com.noteapp.data.repository.FirestoreDBRepository
 import com.noteapp.data.repository.RoomDBRepository
 import com.noteapp.domain.model.Note
 import com.noteapp.util.NoteConstant.ALL_NOTES_DELETED_MSG
+import com.noteapp.util.NoteConstant.EMPTY_STRING
 import com.noteapp.util.NoteConstant.GENERIC_ERROR
-import com.noteapp.util.NoteConstant.LONG_THREE_THOUSAND
+import com.noteapp.util.NoteConstant.LONG_FOUR_HUNDRED
 import com.noteapp.util.NoteConstant.NOTE_DELETED_MSG
 import com.noteapp.util.getFirestoreError
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 import kotlin.coroutines.cancellation.CancellationException
@@ -34,32 +40,44 @@ class NoteListViewModel(
     private val _snackBarEvent = MutableSharedFlow<String>()
     val snackBarEvent = _snackBarEvent.asSharedFlow()
 
-    private var notesJob: Job? = null
+    var searchQueryToShowInSearchBox by mutableStateOf(value = EMPTY_STRING)
+    var searchQueryToPassInFirestoreApi = MutableStateFlow(value = EMPTY_STRING)
+
+    private var searchNoteJob: Job? = null
 
     init {
-        observeNoteList()
+        searchNoteByTitle()
     }
 
-    private fun observeNoteList() {
-        notesJob?.cancel()
-        notesJob = viewModelScope.launch {
-            delay(timeMillis = LONG_THREE_THOUSAND) // To show shimmer effect!
-            firestoreRepository.observeNoteList()
-                .onStart {
-                    _uiState.value = NoteListUiState.Loading
+    /*
+    If we pass userId = null, It will give all the notes.
+    This function serves getAllNotes purpose as well.
+    */
+    @OptIn(markerClass = [FlowPreview::class])
+    private fun searchNoteByTitle() {
+        searchNoteJob?.cancel()
+        searchNoteJob = viewModelScope.launch {
+            searchQueryToPassInFirestoreApi
+                .debounce(timeoutMillis = LONG_FOUR_HUNDRED)
+                .distinctUntilChanged()
+                .collect { latestQuery ->
+                    firestoreRepository.searchNoteByTitle(query = latestQuery)
+                        .onStart {
+                            _uiState.value = NoteListUiState.Loading
+                        }
+                        .catch { ex ->
+                            if (ex is CancellationException) throw ex
+                            val message = if (ex is FirebaseFirestoreException) {
+                                getFirestoreError(firestoreException = ex)
+                            } else {
+                                GENERIC_ERROR
+                            }
+                            _uiState.value = NoteListUiState.Error(message)
+                        }
+                        .collectLatest { noteList ->
+                            _uiState.value = NoteListUiState.Success(noteList = noteList)
+                        }
                 }
-                .catch { ex ->
-                    if (ex is CancellationException) throw ex
-                    val message = if (ex is FirebaseFirestoreException) {
-                        getFirestoreError(firestoreException = ex)
-                    } else {
-                        GENERIC_ERROR
-                    }
-                    _uiState.value = NoteListUiState.Error(message)
-                }
-                .collectLatest { noteList ->
-                _uiState.value = NoteListUiState.Success(noteList = noteList)
-            }
         }
     }
 
@@ -96,6 +114,11 @@ class NoteListViewModel(
         viewModelScope.launch {
             _snackBarEvent.emit(value = errStr)
         }
+    }
+
+    fun onQueryChanged(newQuery: String) {
+        searchQueryToShowInSearchBox = newQuery
+        searchQueryToPassInFirestoreApi.value = newQuery
     }
 }
 
