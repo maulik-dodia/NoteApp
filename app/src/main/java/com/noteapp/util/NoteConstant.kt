@@ -32,10 +32,11 @@ object NoteConstant {
     const val LONG_FOUR_HUNDRED = 400L
 
     // Rest
-    const val TITLE = "title"
     const val EMPTY_STRING = ""
     const val NOTE_ID = "noteId"
     const val USER_ID = "userId"
+    const val TIMESTAMP = "timestamp"
+    const val TITLE_LOWER = "title_lower"
     const val NOTE_ACTION = "note_action"
     const val DD_MMM_YY_HHMM_A = "dd-MMM-yy hh:mm a"
 

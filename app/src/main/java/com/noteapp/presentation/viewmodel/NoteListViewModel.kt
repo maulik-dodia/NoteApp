@@ -15,20 +15,21 @@ import com.noteapp.util.NoteConstant.GENERIC_ERROR
 import com.noteapp.util.NoteConstant.LONG_FOUR_HUNDRED
 import com.noteapp.util.NoteConstant.NOTE_DELETED_MSG
 import com.noteapp.util.getFirestoreError
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 import kotlin.coroutines.cancellation.CancellationException
 
+@OptIn(markerClass = [FlowPreview::class, ExperimentalCoroutinesApi::class])
 class NoteListViewModel(
     private val roomRepository: RoomDBRepository,
     private val firestoreRepository: FirestoreDBRepository
@@ -43,40 +44,32 @@ class NoteListViewModel(
     var searchQueryToShowInSearchBox by mutableStateOf(value = EMPTY_STRING)
     var searchQueryToPassInFirestoreApi = MutableStateFlow(value = EMPTY_STRING)
 
-    private var searchNoteJob: Job? = null
-
     init {
-        searchNoteByTitle()
-    }
-
-    /*
-    If we pass userId = null, It will give all the notes.
-    This function serves getAllNotes purpose as well.
-    */
-    @OptIn(markerClass = [FlowPreview::class])
-    private fun searchNoteByTitle() {
-        searchNoteJob?.cancel()
-        searchNoteJob = viewModelScope.launch {
+        viewModelScope.launch {
             searchQueryToPassInFirestoreApi
                 .debounce(timeoutMillis = LONG_FOUR_HUNDRED)
                 .distinctUntilChanged()
-                .collect { latestQuery ->
-                    firestoreRepository.searchNoteByTitle(query = latestQuery)
-                        .onStart {
-                            _uiState.value = NoteListUiState.Loading
-                        }
-                        .catch { ex ->
-                            if (ex is CancellationException) throw ex
-                            val message = if (ex is FirebaseFirestoreException) {
-                                getFirestoreError(firestoreException = ex)
-                            } else {
-                                GENERIC_ERROR
-                            }
-                            _uiState.value = NoteListUiState.Error(message)
-                        }
-                        .collectLatest { noteList ->
-                            _uiState.value = NoteListUiState.Success(noteList = noteList)
-                        }
+                .flatMapLatest { latestQuery ->
+                    val base = if(latestQuery.isEmpty()) {
+                        firestoreRepository.getAllNotes()
+                    } else {
+                        firestoreRepository.searchNoteByTitle(query = latestQuery)
+                    }
+                    base.onStart {
+                        _uiState.value = NoteListUiState.Loading
+                    }
+                }
+                .catch { ex ->
+                    if (ex is CancellationException) throw ex
+                    val message = if (ex is FirebaseFirestoreException) {
+                        getFirestoreError(firestoreException = ex)
+                    } else {
+                        GENERIC_ERROR
+                    }
+                    _uiState.value = NoteListUiState.Error(message)
+                }
+                .collect { noteList ->
+                    _uiState.value = NoteListUiState.Success(noteList = noteList)
                 }
         }
     }

@@ -77,10 +77,19 @@ class AddEditNoteViewModel(
                 val title = noteTitle.trim()
                 val desc = noteDesc.trim()
                 if (!noteId.isNullOrEmpty()) { // Update operation
-                    val note = Note(id = noteId, title = title, description = desc)
+                    val note = Note(
+                        id = noteId,
+                        title = title,
+                        titleLower = title.lowercase(),
+                        description = desc
+                    )
                     firestoreRepository.updateNote(note)
                 } else { // Insert operation
-                    val note = Note(title = title, description = desc)
+                    val note = Note(
+                        title = title,
+                        titleLower = title.lowercase(),
+                        description = desc
+                    )
                     firestoreRepository.insertNote(note)
                 }
                 goBack()
