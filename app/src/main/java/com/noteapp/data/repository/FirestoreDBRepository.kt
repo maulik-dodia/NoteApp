@@ -6,6 +6,8 @@ import kotlinx.coroutines.flow.Flow
 
 interface FirestoreDBRepository {
 
+    suspend fun getAllNotes(userId: String? = null, limit: Long = LONG_FIFTY): Flow<List<Note>>
+
     suspend fun searchNoteByTitle(userId: String? = null, query: String, limit: Long = LONG_FIFTY): Flow<List<Note>>
 
     suspend fun insertNote(note: Note): String
