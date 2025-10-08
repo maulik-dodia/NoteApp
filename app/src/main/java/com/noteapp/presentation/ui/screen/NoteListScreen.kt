@@ -4,17 +4,24 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -35,6 +42,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -119,8 +127,18 @@ fun NoteListScreen(navController: NavController,
                 is NoteListUiState.Success -> {
                     val noteList = (uiState as NoteListUiState.Success).noteList
                     if(noteList.isNotEmpty()) {
-                        NoteList(noteList = noteList, onNoteClick = onNoteClick) { noteId ->
-                            viewModel.deleteNote(noteId = noteId)
+                        Column {
+                            Text(
+                                modifier = Modifier.padding(start = 24.dp, top = 24.dp),
+                                style = MaterialTheme.typography.headlineSmall,
+                                text = stringResource(id = R.string.note_list_title)
+                            )
+                            /*NoteList(noteList = noteList, onNoteClick = onNoteClick) { noteId ->
+                                viewModel.deleteNote(noteId = noteId)
+                            }*/
+                            NoteListGridAdaptive(noteList = noteList, onNoteClick = onNoteClick) { noteId ->
+                                viewModel.deleteNote(noteId = noteId)
+                            }
                         }
                     } else {
                         NoteListEmpty()
@@ -171,6 +189,7 @@ fun NoteListTopBar(
     hasNotes: Boolean,
     onDeleteAllNotesClick:() -> Unit
 ) {
+    var grid by rememberSaveable { mutableStateOf(value = false) }
     TopAppBar(
         title = {
             SearchBar(
@@ -181,12 +200,17 @@ fun NoteListTopBar(
             )
         },
         actions = {
-            if (hasNotes) {
+            /*if (hasNotes) {
                 TextButton(onClick = {
                     onDeleteAllNotesClick()
                 }) {
                     Text(text = stringResource(id = R.string.delete_all))
                 }
+            }*/
+            IconButton(onClick = { grid = !grid }) {
+                val icon = if (grid) Icons.AutoMirrored.Filled.List else Icons.AutoMirrored.Filled.Send
+                val desc = if (grid) "Switch to list" else "Switch to grid"
+                Icon(imageVector = icon, contentDescription = desc)
             }
         }
     )
@@ -277,7 +301,11 @@ fun NoteShimmer() {
 
 // Note list success
 @Composable
-fun NoteList(noteList: List<Note>, onNoteClick:(String) -> Unit, onDeleteNote:(String) -> Unit) {
+fun NoteList(
+    noteList: List<Note>,
+    onNoteClick:(String) -> Unit,
+    onDeleteNote:(String) -> Unit
+) {
     Column {
         Text(
             modifier = Modifier.padding(start = 24.dp, top = 24.dp),
@@ -298,6 +326,33 @@ fun NoteList(noteList: List<Note>, onNoteClick:(String) -> Unit, onDeleteNote:(S
                     }
                 )
             }
+        }
+    }
+}
+
+@Composable
+fun NoteListGridAdaptive(
+    noteList: List<Note>,
+    onNoteClick:(String) -> Unit,
+    onDeleteNote:(String) -> Unit
+) {
+    LazyVerticalGrid(
+        columns = GridCells.Adaptive(minSize = 160.dp),
+        contentPadding = PaddingValues(all = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(space = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(space = 8.dp),
+        modifier = Modifier.fillMaxSize()
+    ) {
+        items(items = noteList, key = { it.id }) { note ->
+            NoteItem(
+                note = note,
+                onNoteClick = { noteId ->
+                    onNoteClick(noteId)
+                },
+                onDeleteNoteClick = {
+                    onDeleteNote(note.id)
+                }
+            )
         }
     }
 }
