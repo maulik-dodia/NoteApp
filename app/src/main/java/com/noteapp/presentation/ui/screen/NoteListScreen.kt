@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -17,11 +18,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.List
-import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -33,7 +31,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -49,6 +46,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -61,7 +59,6 @@ import com.noteapp.R
 import com.noteapp.data.repository.FirestoreDBRepositoryImpl
 import com.noteapp.data.repository.RoomDBRepositoryImpl
 import com.noteapp.domain.model.Note
-import com.noteapp.presentation.ui.component.ConfirmationDialog
 import com.noteapp.presentation.ui.component.NoteItem
 import com.noteapp.presentation.ui.component.NoteItemShimmer
 import com.noteapp.presentation.viewmodel.NoteListUiState
@@ -86,28 +83,12 @@ fun NoteListScreen(navController: NavController,
         snackBarHostState = snackBarHostState
     )
 
-    // Confirmation dialog for deleting all notes
-    var showDeleteAllNotesDialog by remember { mutableStateOf(value = false) }
-    if(showDeleteAllNotesDialog) {
-        ConfirmationDialog(
-            title = stringResource(id = R.string.delete_all_notes),
-            message = stringResource(id = R.string.delete_all_notes_desc),
-            onConfirm = {
-                viewModel.deleteAllNotes()
-                showDeleteAllNotesDialog = false
-            },
-            onDismiss = { showDeleteAllNotesDialog = false }
-        )
-    }
-
     val uiState by viewModel.uiState.collectAsState()
-    val hasNotes = (uiState as? NoteListUiState.Success)?.noteList?.isNotEmpty() == true
+    var isGridView by rememberSaveable { mutableStateOf(value = false) }
 
     Scaffold(
         topBar = {
-            NoteListTopBar(viewModel = viewModel, hasNotes = hasNotes) {
-                showDeleteAllNotesDialog = true
-            }
+            NoteListTopBar(viewModel = viewModel)
         },
         floatingActionButton = {
             NoteAddEdit {
@@ -127,19 +108,17 @@ fun NoteListScreen(navController: NavController,
                 is NoteListUiState.Success -> {
                     val noteList = (uiState as NoteListUiState.Success).noteList
                     if(noteList.isNotEmpty()) {
-                        Column {
-                            Text(
-                                modifier = Modifier.padding(start = 24.dp, top = 24.dp),
-                                style = MaterialTheme.typography.headlineSmall,
-                                text = stringResource(id = R.string.note_list_title)
-                            )
-                            /*NoteList(noteList = noteList, onNoteClick = onNoteClick) { noteId ->
-                                viewModel.deleteNote(noteId = noteId)
-                            }*/
-                            NoteListGridAdaptive(noteList = noteList, onNoteClick = onNoteClick) { noteId ->
-                                viewModel.deleteNote(noteId = noteId)
+                        NoteListSuccess(
+                            noteList = noteList,
+                            isGridView = isGridView,
+                            onNoteListViewChanged = { changedNoteListView ->
+                                isGridView = changedNoteListView
+                            },
+                            onNoteClick = onNoteClick,
+                            onDeleteNote = { noteId ->
+                                viewModel.deleteNote(noteId)
                             }
-                        }
+                        )
                     } else {
                         NoteListEmpty()
                     }
@@ -184,12 +163,7 @@ fun ShowSnackBarMsg(
 // Note topbar
 @OptIn(markerClass = [ExperimentalMaterial3Api::class])
 @Composable
-fun NoteListTopBar(
-    viewModel: NoteListViewModel,
-    hasNotes: Boolean,
-    onDeleteAllNotesClick:() -> Unit
-) {
-    var grid by rememberSaveable { mutableStateOf(value = false) }
+fun NoteListTopBar(viewModel: NoteListViewModel) {
     TopAppBar(
         title = {
             SearchBar(
@@ -198,27 +172,16 @@ fun NoteListTopBar(
                     viewModel.onQueryChanged(newQuery = newQuery)
                 }
             )
-        },
-        actions = {
-            /*if (hasNotes) {
-                TextButton(onClick = {
-                    onDeleteAllNotesClick()
-                }) {
-                    Text(text = stringResource(id = R.string.delete_all))
-                }
-            }*/
-            IconButton(onClick = { grid = !grid }) {
-                val icon = if (grid) Icons.AutoMirrored.Filled.List else Icons.AutoMirrored.Filled.Send
-                val desc = if (grid) "Switch to list" else "Switch to grid"
-                Icon(imageVector = icon, contentDescription = desc)
-            }
         }
     )
 }
 
+// Actual searchBar
 @Composable
-fun SearchBar(searchQuery: String, onQueryChange:(String) -> Unit) {
-
+fun SearchBar(
+    searchQuery: String,
+    onQueryChange:(String) -> Unit
+) {
     val textStyle = MaterialTheme.typography.bodyLarge
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
@@ -275,7 +238,7 @@ fun SearchBar(searchQuery: String, onQueryChange:(String) -> Unit) {
     )
 }
 
-// Note add edit
+// Add note button
 @Composable
 fun NoteAddEdit(onAddNoteClick: () -> Unit) {
     FloatingActionButton(
@@ -301,35 +264,83 @@ fun NoteShimmer() {
 
 // Note list success
 @Composable
+fun NoteListSuccess(
+    noteList: List<Note>,
+    isGridView: Boolean,
+    onNoteListViewChanged: (isGridView: Boolean) -> Unit,
+    onNoteClick: (String) -> Unit,
+    onDeleteNote: (String) -> Unit
+) {
+    Column {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 24.dp, top = 24.dp, end = 24.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                style = MaterialTheme.typography.headlineSmall,
+                text = stringResource(id = R.string.note_list_title)
+            )
+            IconButton(onClick = {
+                onNoteListViewChanged(!isGridView)
+            }) {
+                val icon = if (isGridView){
+                    painterResource(id = R.drawable.grid_view)
+                } else {
+                    painterResource(id = R.drawable.list_view)
+                }
+                val desc = if (isGridView) {
+                    stringResource(id = R.string.switch_to_grid_view)
+                } else {
+                    stringResource(id = R.string.switch_to_list_view)
+                }
+                Icon(
+                    painter = icon,
+                    contentDescription = desc
+                )
+            }
+        }
+        if(isGridView) {
+            NoteListGridAdaptive(
+                noteList = noteList,
+                onNoteClick = onNoteClick,
+                onDeleteNote = onDeleteNote
+            )
+        } else {
+            NoteList(
+                noteList = noteList,
+                onNoteClick = onNoteClick,
+                onDeleteNote = onDeleteNote
+            )
+        }
+    }
+}
+
+// Note list view
+@Composable
 fun NoteList(
     noteList: List<Note>,
     onNoteClick:(String) -> Unit,
     onDeleteNote:(String) -> Unit
 ) {
-    Column {
-        Text(
-            modifier = Modifier.padding(start = 24.dp, top = 24.dp),
-            style = MaterialTheme.typography.headlineSmall,
-            text = stringResource(id = R.string.note_list_title)
-        )
-        LazyColumn(
-            modifier = Modifier.padding(top = 16.dp)
-        ) {
-            items(items = noteList) { note ->
-                NoteItem(
-                    note = note,
-                    onNoteClick = { noteId ->
-                        onNoteClick(noteId)
-                    },
-                    onDeleteNoteClick = {
-                        onDeleteNote(note.id)
-                    }
-                )
-            }
+    LazyColumn(modifier = Modifier.padding(top = 16.dp)) {
+        items(items = noteList) { note ->
+            NoteItem(
+                note = note,
+                onNoteClick = { noteId ->
+                    onNoteClick(noteId)
+                },
+                onDeleteNoteClick = {
+                    onDeleteNote(note.id)
+                }
+            )
         }
     }
 }
 
+// Note grid view
 @Composable
 fun NoteListGridAdaptive(
     noteList: List<Note>,
@@ -343,7 +354,10 @@ fun NoteListGridAdaptive(
         horizontalArrangement = Arrangement.spacedBy(space = 8.dp),
         modifier = Modifier.fillMaxSize()
     ) {
-        items(items = noteList, key = { it.id }) { note ->
+        items(
+            items = noteList,
+            key = { it.id }
+        ) { note ->
             NoteItem(
                 note = note,
                 onNoteClick = { noteId ->
@@ -360,7 +374,8 @@ fun NoteListGridAdaptive(
 // Note list empty
 @Composable
 fun NoteListEmpty() {
-    Column(modifier = Modifier.fillMaxSize(),
+    Column(
+        modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
