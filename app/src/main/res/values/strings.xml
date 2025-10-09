@@ -15,7 +15,8 @@
     <string name="no_notes_available">No Notes Available</string>
     <string name="note_updated">Note updated successfully!</string>
     <string name="note_deleted">Note deleted successfully!</string>
-    <string name="delete_all_notes_desc">Are you sure you want to delete all notes?</string>
+    <string name="switch_to_list_view">Switch to list view</string>
+    <string name="switch_to_grid_view">Switch to grid view</string>
 
     <!--Add Edit Note Screen-->
     <string name="back">Back</string>
