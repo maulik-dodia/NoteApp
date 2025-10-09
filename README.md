@@ -6,14 +6,13 @@ A simple note-taking app for Android built with Jetpack Compose and Firebase.
 
 ✅ **Current Features**
 - Create and edit notes
-- View all notes in a list
+- View all notes in a normal list view or grid view
 - Delete individual notes
 - Delete all notes
 - Shimmer loading animations
+- Search notes
 
 🚧 **Coming Soon**
-- Search notes
-- Filter and sort notes
 - Auto-save notes
 
 ## Tech Stack
@@ -33,8 +32,7 @@ A simple note-taking app for Android built with Jetpack Compose and Firebase.
 3. Add your `google-services.json` file
 4. Build and run
 
+
 ## Demo
 
-https://github.com/user-attachments/assets/73ed3912-2794-4092-9a02-307bbd549d75
-
-*Showing: Create note → Edit note → Delete note*
+[https://github.com/user-attachments/assets/73ed3912-2794-4092-9a02-307bbd549d75](https://github.com/user-attachments/assets/d46cd6f3-51dc-4c57-bc63-aebfd2256fc7)
