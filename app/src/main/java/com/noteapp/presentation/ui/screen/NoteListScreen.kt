@@ -1,6 +1,7 @@
 package com.noteapp.presentation.ui.screen
 
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -224,6 +226,7 @@ fun SearchBar(
         },
         modifier = Modifier
             .fillMaxWidth()
+            .padding(end = 16.dp)
             .border(
                 width = 1.dp,
                 color = Color.LightGray,
@@ -283,24 +286,24 @@ fun NoteListSuccess(
                 style = MaterialTheme.typography.headlineSmall,
                 text = stringResource(id = R.string.note_list_title)
             )
-            IconButton(onClick = {
-                onNoteListViewChanged(!isGridView)
-            }) {
-                val icon = if (isGridView){
+            Icon(
+                painter = if (isGridView) {
                     painterResource(id = R.drawable.grid_view)
-                } else {
+                } else{
                     painterResource(id = R.drawable.list_view)
-                }
-                val desc = if (isGridView) {
+                },
+                contentDescription = if (isGridView) {
                     stringResource(id = R.string.switch_to_grid_view)
-                } else {
+                } else{
                     stringResource(id = R.string.switch_to_list_view)
-                }
-                Icon(
-                    painter = icon,
-                    contentDescription = desc
-                )
-            }
+                },
+                modifier = Modifier
+                    .size(size = 24.dp)
+                    .clickable {
+                        onNoteListViewChanged(!isGridView)
+                    }
+                    .padding(all = 0.dp) // ensure no extra padding
+            )
         }
         if(isGridView) {
             NoteListGridAdaptive(
