@@ -19,3 +19,4 @@ app/google-services.json
 personal_github_ssh_key.pub
 personal_github_ssh_key
 app/src/main/java/com/noteapp/ProjectStructure.kt
+app-demos
