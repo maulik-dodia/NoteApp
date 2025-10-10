@@ -278,7 +278,7 @@ fun NoteListSuccess(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 24.dp, top = 24.dp, end = 24.dp),
+                .padding(start = 24.dp, top = 24.dp, end = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
@@ -288,9 +288,9 @@ fun NoteListSuccess(
             )
             Icon(
                 painter = if (isGridView) {
-                    painterResource(id = R.drawable.grid_view)
-                } else{
                     painterResource(id = R.drawable.list_view)
+                } else{
+                    painterResource(id = R.drawable.grid_view)
                 },
                 contentDescription = if (isGridView) {
                     stringResource(id = R.string.switch_to_grid_view)
@@ -298,11 +298,11 @@ fun NoteListSuccess(
                     stringResource(id = R.string.switch_to_list_view)
                 },
                 modifier = Modifier
-                    .size(size = 24.dp)
+                    .size(size = 48.dp)
                     .clickable {
                         onNoteListViewChanged(!isGridView)
                     }
-                    .padding(all = 0.dp) // ensure no extra padding
+                    .padding(all = 12.dp) // ensure no extra padding
             )
         }
         if(isGridView) {
