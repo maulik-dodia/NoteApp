@@ -166,75 +166,61 @@ fun ShowSnackBarMsg(
 fun NoteListTopBar(viewModel: NoteListViewModel) {
     TopAppBar(
         title = {
-            SearchBar(
-                searchQuery = viewModel.searchQueryToShowInSearchBox,
-                onQueryChange = { newQuery ->
+            val textStyle = MaterialTheme.typography.bodyLarge
+            val keyboardController = LocalSoftwareKeyboardController.current
+            val focusManager = LocalFocusManager.current
+
+            OutlinedTextField(
+                value = viewModel.searchQueryToShowInSearchBox,
+                onValueChange = { newQuery ->
                     viewModel.onQueryChanged(newQuery = newQuery)
-                }
+                },
+                singleLine = true,
+                textStyle = textStyle,
+                placeholder = {
+                    Text(text = stringResource(id = R.string.search_notes), style = textStyle)
+                },
+                keyboardOptions = KeyboardOptions(
+                    imeAction = ImeAction.Search,
+                    capitalization = KeyboardCapitalization.Sentences
+                ),
+                keyboardActions = KeyboardActions(
+                    onSearch = {
+                        keyboardController?.hide()
+                        focusManager.clearFocus()
+                    }
+                ),
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = stringResource(id = R.string.search)
+                    )
+                },
+                trailingIcon = {
+                    if (viewModel.searchQueryToShowInSearchBox.isNotEmpty()) {
+                        IconButton(onClick = { viewModel.onQueryChanged(newQuery = EMPTY_STRING) }) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = stringResource(id = R.string.clear)
+                            )
+                        }
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .border(
+                        width = 1.dp,
+                        color = Color.LightGray,
+                        shape = RoundedCornerShape(size = 32.dp)
+                    ),
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent
+                )
             )
         }
-    )
-}
-
-// Actual searchBar
-@Composable
-fun SearchBar(
-    searchQuery: String,
-    onQueryChange:(String) -> Unit
-) {
-    val textStyle = MaterialTheme.typography.bodyLarge
-    val keyboardController = LocalSoftwareKeyboardController.current
-    val focusManager = LocalFocusManager.current
-
-    OutlinedTextField(
-        value = searchQuery,
-        onValueChange = { newQuery ->
-            onQueryChange(newQuery)
-        },
-        singleLine = true,
-        textStyle = textStyle,
-        placeholder = {
-            Text(text = stringResource(id = R.string.search_notes), style = textStyle)
-        },
-        keyboardOptions = KeyboardOptions(
-            imeAction = ImeAction.Search,
-            capitalization = KeyboardCapitalization.Sentences
-        ),
-        keyboardActions = KeyboardActions(
-            onSearch = {
-                keyboardController?.hide()
-                focusManager.clearFocus()
-            }
-        ),
-        leadingIcon = {
-            Icon(
-                imageVector = Icons.Default.Search,
-                contentDescription = stringResource(id = R.string.search)
-            )
-        },
-        trailingIcon = {
-            if (searchQuery.isNotEmpty()) {
-                IconButton(onClick = { onQueryChange(EMPTY_STRING) }) {
-                    Icon(
-                        imageVector = Icons.Default.Close,
-                        contentDescription = stringResource(id = R.string.clear)
-                    )
-                }
-            }
-        },
-        modifier = Modifier
-            .fillMaxWidth()
-            .border(
-                width = 1.dp,
-                color = Color.LightGray,
-                shape = RoundedCornerShape(size = 32.dp)
-            ),
-        colors = TextFieldDefaults.colors(
-            focusedContainerColor = Color.Transparent,
-            unfocusedContainerColor = Color.Transparent,
-            focusedIndicatorColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent
-        )
     )
 }
 
