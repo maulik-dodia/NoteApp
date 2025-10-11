@@ -106,8 +106,8 @@ fun NoteListScreen(navController: NavController,
                 NoteListUiState.Loading -> {
                     NoteShimmer()
                 }
-                is NoteListUiState.Success -> {
 
+                is NoteListUiState.Success -> {
                     val noteList = (uiState as NoteListUiState.Success).noteList
                     if(noteList.isNotEmpty()) {
                         NoteListSuccess(
