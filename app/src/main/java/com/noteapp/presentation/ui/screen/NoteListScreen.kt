@@ -35,9 +35,9 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -54,6 +54,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.google.firebase.firestore.FirebaseFirestore
@@ -85,8 +86,13 @@ fun NoteListScreen(navController: NavController,
         snackBarHostState = snackBarHostState
     )
 
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
     var isGridView by rememberSaveable { mutableStateOf(value = false) }
+
+    LaunchedEffect(key1 = Unit) {
+        viewModel.observeNoteList() // Start continuous listening
+    }
 
     Scaffold(
         topBar = {
@@ -107,10 +113,10 @@ fun NoteListScreen(navController: NavController,
                     NoteShimmer()
                 }
                 is NoteListUiState.Success -> {
-
                     val noteList = (uiState as NoteListUiState.Success).noteList
                     if(noteList.isNotEmpty()) {
                         NoteListSuccess(
+                            isRefreshing = isRefreshing,
                             noteList = noteList,
                             isGridView = isGridView,
                             onNoteListViewChanged = { changedNoteListView ->
@@ -119,6 +125,9 @@ fun NoteListScreen(navController: NavController,
                             onNoteClick = onNoteClick,
                             onDeleteNote = { noteId ->
                                 viewModel.deleteNote(noteId)
+                            },
+                            onRefreshNoteList = {
+                                viewModel.refreshNoteList()
                             }
                         )
                     } else {
@@ -252,13 +261,16 @@ fun NoteShimmer() {
 }
 
 // Note list success
+@OptIn(markerClass = [ExperimentalMaterial3Api::class])
 @Composable
 fun NoteListSuccess(
+    isRefreshing: Boolean,
     noteList: List<Note>,
     isGridView: Boolean,
     onNoteListViewChanged: (isGridView: Boolean) -> Unit,
     onNoteClick: (String) -> Unit,
-    onDeleteNote: (String) -> Unit
+    onDeleteNote: (String) -> Unit,
+    onRefreshNoteList: () -> Unit
 ) {
     Column {
         Row(
@@ -291,18 +303,21 @@ fun NoteListSuccess(
                     .padding(all = 12.dp) // ensure no extra padding
             )
         }
-        if(isGridView) {
-            NoteListGridAdaptive(
-                noteList = noteList,
-                onNoteClick = onNoteClick,
-                onDeleteNote = onDeleteNote
-            )
-        } else {
-            NoteList(
-                noteList = noteList,
-                onNoteClick = onNoteClick,
-                onDeleteNote = onDeleteNote
-            )
+
+        PullToRefreshBox(isRefreshing = isRefreshing, onRefresh = onRefreshNoteList) {
+            if(isGridView) {
+                NoteListGridAdaptive(
+                    noteList = noteList,
+                    onNoteClick = onNoteClick,
+                    onDeleteNote = onDeleteNote
+                )
+            } else {
+                NoteList(
+                    noteList = noteList,
+                    onNoteClick = onNoteClick,
+                    onDeleteNote = onDeleteNote
+                )
+            }
         }
     }
 }

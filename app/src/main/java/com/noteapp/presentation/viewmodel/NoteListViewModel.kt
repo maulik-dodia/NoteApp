@@ -13,17 +13,23 @@ import com.noteapp.util.NoteConstant.ALL_NOTES_DELETED_MSG
 import com.noteapp.util.NoteConstant.EMPTY_STRING
 import com.noteapp.util.NoteConstant.GENERIC_ERROR
 import com.noteapp.util.NoteConstant.LONG_FOUR_HUNDRED
+import com.noteapp.util.NoteConstant.LONG_ONE_THOUSAND
 import com.noteapp.util.NoteConstant.NOTE_DELETED_MSG
 import com.noteapp.util.getFirestoreError
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
@@ -38,14 +44,20 @@ class NoteListViewModel(
     private var _uiState = MutableStateFlow<NoteListUiState>(value = NoteListUiState.Loading)
     val uiState: StateFlow<NoteListUiState> = _uiState
 
+    private val _isRefreshing = MutableStateFlow(value = false)
+    val isRefreshing = _isRefreshing.asStateFlow()
+
     private val _snackBarEvent = MutableSharedFlow<String>()
     val snackBarEvent = _snackBarEvent.asSharedFlow()
 
     var searchQueryToShowInSearchBox by mutableStateOf(value = EMPTY_STRING)
     var searchQueryToPassInFirestoreApi = MutableStateFlow(value = EMPTY_STRING)
 
-    init {
-        viewModelScope.launch {
+    private var observeJob: Job? = null
+
+    fun observeNoteList() {
+        if (observeJob?.isActive == true) return
+        observeJob = viewModelScope.launch {
             searchQueryToPassInFirestoreApi
                 .debounce(timeoutMillis = LONG_FOUR_HUNDRED)
                 .distinctUntilChanged()
@@ -71,6 +83,37 @@ class NoteListViewModel(
                 .collect { noteList ->
                     _uiState.value = NoteListUiState.Success(noteList = noteList)
                 }
+        }
+    }
+
+    fun refreshNoteList() {
+        viewModelScope.launch {
+            _isRefreshing.value = true
+            try {
+                val deferredNotes = async {
+                    // Use current search query for refresh
+                    val currentQuery = searchQueryToPassInFirestoreApi.value
+                    if (currentQuery.isEmpty()) {
+                        firestoreRepository.getAllNotes().first()
+                    } else {
+                        firestoreRepository.searchNoteByTitle(query = currentQuery).first()
+                    }
+                }
+                // Ensure at least 1 second for smooth UX
+                delay(timeMillis = LONG_ONE_THOUSAND)
+                val noteList = deferredNotes.await()
+                _uiState.value = NoteListUiState.Success(noteList = noteList)
+            } catch (ex: Exception) {
+                if (ex is CancellationException) throw ex
+                val message = if (ex is FirebaseFirestoreException) {
+                    getFirestoreError(firestoreException = ex)
+                } else {
+                    GENERIC_ERROR
+                }
+                _uiState.value = NoteListUiState.Error(message)
+            } finally {
+                _isRefreshing.value = false
+            }
         }
     }
 
