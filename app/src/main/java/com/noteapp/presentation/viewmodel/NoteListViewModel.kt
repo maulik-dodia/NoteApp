@@ -18,6 +18,7 @@ import com.noteapp.util.NoteConstant.NOTE_DELETED_MSG
 import com.noteapp.util.getFirestoreError
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -52,8 +53,11 @@ class NoteListViewModel(
     var searchQueryToShowInSearchBox by mutableStateOf(value = EMPTY_STRING)
     var searchQueryToPassInFirestoreApi = MutableStateFlow(value = EMPTY_STRING)
 
+    private var observeJob: Job? = null
+
     fun observeNoteList() {
-        viewModelScope.launch {
+        if (observeJob?.isActive == true) return
+        observeJob = viewModelScope.launch {
             searchQueryToPassInFirestoreApi
                 .debounce(timeoutMillis = LONG_FOUR_HUNDRED)
                 .distinctUntilChanged()

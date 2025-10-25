@@ -38,7 +38,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -55,6 +54,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.google.firebase.firestore.FirebaseFirestore
@@ -86,8 +86,8 @@ fun NoteListScreen(navController: NavController,
         snackBarHostState = snackBarHostState
     )
 
-    val uiState by viewModel.uiState.collectAsState()
-    val isRefreshing by viewModel.isRefreshing.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
     var isGridView by rememberSaveable { mutableStateOf(value = false) }
 
     LaunchedEffect(key1 = Unit) {
