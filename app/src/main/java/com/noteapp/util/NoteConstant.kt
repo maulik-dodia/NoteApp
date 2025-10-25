@@ -30,6 +30,7 @@ object NoteConstant {
     // Long
     const val LONG_FIFTY = 50L
     const val LONG_FOUR_HUNDRED = 400L
+    const val LONG_ONE_THOUSAND = 1000L
 
     // Rest
     const val EMPTY_STRING = ""
