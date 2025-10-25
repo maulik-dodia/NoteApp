@@ -35,6 +35,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -86,7 +87,12 @@ fun NoteListScreen(navController: NavController,
     )
 
     val uiState by viewModel.uiState.collectAsState()
+    val isRefreshing by viewModel.isRefreshing.collectAsState()
     var isGridView by rememberSaveable { mutableStateOf(value = false) }
+
+    LaunchedEffect(key1 = Unit) {
+        viewModel.observeNoteList() // Start continuous listening
+    }
 
     Scaffold(
         topBar = {
@@ -107,10 +113,10 @@ fun NoteListScreen(navController: NavController,
                     NoteShimmer()
                 }
                 is NoteListUiState.Success -> {
-
                     val noteList = (uiState as NoteListUiState.Success).noteList
                     if(noteList.isNotEmpty()) {
                         NoteListSuccess(
+                            isRefreshing = isRefreshing,
                             noteList = noteList,
                             isGridView = isGridView,
                             onNoteListViewChanged = { changedNoteListView ->
@@ -119,6 +125,9 @@ fun NoteListScreen(navController: NavController,
                             onNoteClick = onNoteClick,
                             onDeleteNote = { noteId ->
                                 viewModel.deleteNote(noteId)
+                            },
+                            onRefreshNoteList = {
+                                viewModel.refreshNoteList()
                             }
                         )
                     } else {
@@ -252,13 +261,16 @@ fun NoteShimmer() {
 }
 
 // Note list success
+@OptIn(markerClass = [ExperimentalMaterial3Api::class])
 @Composable
 fun NoteListSuccess(
+    isRefreshing: Boolean,
     noteList: List<Note>,
     isGridView: Boolean,
     onNoteListViewChanged: (isGridView: Boolean) -> Unit,
     onNoteClick: (String) -> Unit,
-    onDeleteNote: (String) -> Unit
+    onDeleteNote: (String) -> Unit,
+    onRefreshNoteList: () -> Unit
 ) {
     Column {
         Row(
@@ -291,18 +303,21 @@ fun NoteListSuccess(
                     .padding(all = 12.dp) // ensure no extra padding
             )
         }
-        if(isGridView) {
-            NoteListGridAdaptive(
-                noteList = noteList,
-                onNoteClick = onNoteClick,
-                onDeleteNote = onDeleteNote
-            )
-        } else {
-            NoteList(
-                noteList = noteList,
-                onNoteClick = onNoteClick,
-                onDeleteNote = onDeleteNote
-            )
+
+        PullToRefreshBox(isRefreshing = isRefreshing, onRefresh = onRefreshNoteList) {
+            if(isGridView) {
+                NoteListGridAdaptive(
+                    noteList = noteList,
+                    onNoteClick = onNoteClick,
+                    onDeleteNote = onDeleteNote
+                )
+            } else {
+                NoteList(
+                    noteList = noteList,
+                    onNoteClick = onNoteClick,
+                    onDeleteNote = onDeleteNote
+                )
+            }
         }
     }
 }
